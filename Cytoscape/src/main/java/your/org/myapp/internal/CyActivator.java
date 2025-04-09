@@ -63,5 +63,18 @@ public class CyActivator extends AbstractCyActivator {
         predictNodeGCNProps.setProperty("preferredMenu", "Apps.MyApp");
         predictNodeGCNProps.setProperty("title", "Predict class for GCN");
         registerService(context, predictNodeGCNTaskFactory, org.cytoscape.work.TaskFactory.class, predictNodeGCNProps);
+
+        //SendHeteroData
+        SendHeteroDataTaskFactory sendHeteroDataTaskFactory = new SendHeteroDataTaskFactory(applicationManager);
+        Properties sendHeteroDataProps = new Properties();
+        sendHeteroDataProps.setProperty("preferredMenu", "Apps.MyApp");
+        sendHeteroDataProps.setProperty("title", "Send Hetero Data");
+        registerService(context, sendHeteroDataTaskFactory, org.cytoscape.work.TaskFactory.class, sendHeteroDataProps);
+        //Clustering
+        ClusterNodesTaskFactory clusterNodesTaskFactory = new ClusterNodesTaskFactory(applicationManager);
+        Properties clusterNodesProps = new Properties();
+        clusterNodesProps.setProperty("preferredMenu", "Apps.MyApp");
+        clusterNodesProps.setProperty("title", "Cluster Nodes");
+        registerService(context, clusterNodesTaskFactory, org.cytoscape.work.TaskFactory.class, clusterNodesProps);
     }
 }
