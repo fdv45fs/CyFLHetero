@@ -6,3 +6,5 @@
 /Python/venv/
 /Python/*.pkl
 /Python/*.pth
+Python/logs/
+Python/__pycache__/
