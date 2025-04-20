@@ -64,17 +64,25 @@ public class CyActivator extends AbstractCyActivator {
         predictNodeGCNProps.setProperty("title", "Predict class for GCN");
         registerService(context, predictNodeGCNTaskFactory, org.cytoscape.work.TaskFactory.class, predictNodeGCNProps);
 
-        //SendHeteroData
+        //SendHeteroData (Training Metapath2Vec)
         SendHeteroDataTaskFactory sendHeteroDataTaskFactory = new SendHeteroDataTaskFactory(applicationManager);
         Properties sendHeteroDataProps = new Properties();
-        sendHeteroDataProps.setProperty("preferredMenu", "Apps.MyApp");
-        sendHeteroDataProps.setProperty("title", "Send Hetero Data");
+        sendHeteroDataProps.setProperty("preferredMenu", "Apps.MyApp.HeteroGNN"); // Grouped menu
+        sendHeteroDataProps.setProperty("title", "Train Metapath2Vec Model");
         registerService(context, sendHeteroDataTaskFactory, org.cytoscape.work.TaskFactory.class, sendHeteroDataProps);
+
         //Clustering
         ClusterNodesTaskFactory clusterNodesTaskFactory = new ClusterNodesTaskFactory(applicationManager);
         Properties clusterNodesProps = new Properties();
-        clusterNodesProps.setProperty("preferredMenu", "Apps.MyApp");
-        clusterNodesProps.setProperty("title", "Cluster Nodes");
+        clusterNodesProps.setProperty("preferredMenu", "Apps.MyApp.HeteroGNN");
+        clusterNodesProps.setProperty("title", "Cluster Nodes (after Training)");
         registerService(context, clusterNodesTaskFactory, org.cytoscape.work.TaskFactory.class, clusterNodesProps);
+
+        //Link Prediction
+        PredictLinksTaskFactory predictLinksTaskFactory = new PredictLinksTaskFactory(applicationManager);
+        Properties predictLinksProps = new Properties();
+        predictLinksProps.setProperty("preferredMenu", "Apps.MyApp.HeteroGNN");
+        predictLinksProps.setProperty("title", "Predict Link Score (Select 2 Nodes)");
+        registerService(context, predictLinksTaskFactory, org.cytoscape.work.TaskFactory.class, predictLinksProps);
     }
 }

@@ -21,26 +21,58 @@ def create_hetero_data(edge_index: List[Dict]) -> HeteroData:
     data = HeteroData()
     node_map = {'drug': {}, 'gene': {}}  # Khởi tạo node_map
     edge_index_dict = {
-        ('drug', 'to', 'gene'): [[], []],
+        ('drug', 'to', 'gene'): [[], []], # Hoàn lại tên quan hệ
         ('gene', 'to', 'drug'): [[], []]
     }
 
     for edge in edge_index:
-        drug_name, gene_name = edge['source'], edge['target']
-        if drug_name not in node_map['drug']:
-            node_map['drug'][drug_name] = len(node_map['drug'])
-        if gene_name not in node_map['gene']:
-            node_map['gene'][gene_name] = len(node_map['gene'])
-        drug_index, gene_index = node_map['drug'][drug_name], node_map['gene'][gene_name]
-        edge_index_dict[('drug', 'to', 'gene')][0].append(drug_index)
-        edge_index_dict[('drug', 'to', 'gene')][1].append(gene_index)
-        edge_index_dict[('gene', 'to', 'drug')][0].append(gene_index)
-        edge_index_dict[('gene', 'to', 'drug')][1].append(drug_index)
+        source_name, target_name = edge['source'], edge['target']
+
+        # Xác định loại node dựa trên tiền tố "DB"
+        source_type = 'drug' if source_name.startswith('DB') else 'gene'
+        target_type = 'gene' if source_type == 'drug' else 'drug' # Giả định đồ thị là bipartite
+
+        # Đảm bảo tên nút đúng loại
+        if source_type == 'drug' and not source_name.startswith('DB'):
+             logging.warning(f"Node {source_name} was expected to be a drug (start with 'DB') but isn't.")
+             continue
+        if target_type == 'gene' and target_name.startswith('DB'):
+             logging.warning(f"Node {target_name} was expected to be a gene (not start with 'DB') but does.")
+             continue
+
+        # Thêm node vào map nếu chưa có
+        if source_name not in node_map[source_type]:
+            node_map[source_type][source_name] = len(node_map[source_type])
+        if target_name not in node_map[target_type]:
+            node_map[target_type][target_name] = len(node_map[target_type])
+
+        # Lấy index của node
+        source_index = node_map[source_type][source_name]
+        target_index = node_map[target_type][target_name]
+
+        # Thêm cạnh vào edge_index_dict (sử dụng tên 'to')
+        edge_tuple_forward = (source_type, 'to', target_type)
+        edge_tuple_backward = (target_type, 'to', source_type)
+
+        edge_index_dict[edge_tuple_forward][0].append(source_index)
+        edge_index_dict[edge_tuple_forward][1].append(target_index)
+        edge_index_dict[edge_tuple_backward][0].append(target_index)
+        edge_index_dict[edge_tuple_backward][1].append(source_index)
 
     for edge_type, ei in edge_index_dict.items():
         data[edge_type].edge_index = torch.tensor(ei, dtype=torch.long)
-    data['drug'].x = torch.eye(len(node_map['drug']), dtype=torch.float)
-    data['gene'].x = torch.eye(len(node_map['gene']), dtype=torch.float)
+
+    # Khởi tạo đặc trưng node (ví dụ: identity matrix) nếu có node
+    if node_map['drug']:
+       data['drug'].x = torch.eye(len(node_map['drug']), dtype=torch.float)
+    if node_map['gene']:
+       data['gene'].x = torch.eye(len(node_map['gene']), dtype=torch.float)
+
+    # Xóa các node type không có node nào
+    for node_type in list(data.node_types):
+        if node_type not in node_map or not node_map[node_type]:
+            del data[node_type]
+
     return data
 
 def train_metapath2vec(data: HeteroData, metapath: List[Tuple[str, str, str]], embedding_dim: int = 128,
@@ -157,13 +189,23 @@ def predict_links():
         return jsonify({"status":"error", "message":str(e)}), 500
 
 def get_node_embedding(model, node_name: str, node_map):
+    # Xác định loại node dựa trên tiền tố
+    node_type = 'drug' if node_name.startswith('DB') else 'gene'
 
-    node_type = node_name.split("_")[0]  # "drug_1" -> "drug"
     if node_type not in node_map or node_name not in node_map[node_type]:
+        logging.warning(f"Node '{node_name}' (type: {node_type}) not found in node_map.")
         return None, None  # Return None for both embedding and type
+
     node_index = node_map[node_type][node_name]
-    with torch.no_grad():
-        embedding = model(node_type, torch.tensor([node_index], device=device)).cpu().numpy()
-    return embedding[0], node_type
+    try:
+        with torch.no_grad():
+            # Lấy embedding cho một node cụ thể thuộc một loại cụ thể
+            embedding = model(node_type, torch.tensor([node_index], device=device)).cpu().numpy()
+        return embedding[0], node_type
+    except Exception as e:
+        # Bắt lỗi nếu model không thể lấy embedding cho node_type này (ví dụ: node_type không có trong metapath)
+        logging.error(f"Error getting embedding for node '{node_name}' (type: {node_type}, index: {node_index}): {e}")
+        return None, None
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5001)
