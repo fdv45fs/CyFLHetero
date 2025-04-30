@@ -27,7 +27,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
 
     public NodeEmbeddingsPanel() {
         initComponents();
-        buildLayout();
+        buildLayoutWithGridBag();
     }
 
     private void initComponents() {
@@ -77,7 +77,6 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
              @Override
              public void actionPerformed(ActionEvent e) {
                  System.out.println("Run button clicked");
-                 // Lấy các giá trị đã chọn
                  String networkType = (String) networkTypeComboBox.getSelectedItem();
                  String dimension = (String) dimensionComboBox.getSelectedItem();
                  String model = (String) modelComboBox.getSelectedItem();
@@ -88,48 +87,63 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
          });
     }
 
-    private void buildLayout() {
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+    private void buildLayoutWithGridBag() {
+        setLayout(new GridBagLayout());
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        setAlignmentX(Component.LEFT_ALIGNMENT);
+        GridBagConstraints gbc = new GridBagConstraints();
 
-        // ---- Section Network ----
-        JPanel networkPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        networkPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        networkPanel.add(networkLabel);
-        networkPanel.add(networkTypeComboBox);
-        add(networkPanel);
+        gbc.insets = new Insets(2, 2, 2, 2);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        // Thêm khoảng cách giữa các section
-        add(Box.createRigidArea(new Dimension(0, 10)));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        add(networkLabel, gbc);
 
-        // ---- Section Dimension ----
-        JPanel dimensionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        dimensionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        dimensionPanel.add(dimensionLabel);
-        dimensionPanel.add(dimensionComboBox);
-        add(dimensionPanel);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(networkTypeComboBox, gbc);
 
-        add(Box.createRigidArea(new Dimension(0, 10)));
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        add(dimensionLabel, gbc);
 
-        // ---- Section Models ----
-        JPanel modelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        modelPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        modelPanel.add(modelLabel);
-        modelPanel.add(modelComboBox);
-        add(modelPanel);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(dimensionComboBox, gbc);
 
-        add(Box.createRigidArea(new Dimension(0, 15))); // Khoảng cách lớn hơn trước nút Run
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        add(modelLabel, gbc);
 
-        // ---- Run Button ----
-        // Tạo panel riêng cho nút để căn giữa hoặc căn trái dễ hơn nếu cần
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Căn giữa nút
-        buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT); // Panel căn trái
-        buttonPanel.add(runButton);
-        add(buttonPanel);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(modelComboBox, gbc);
 
-        // Đẩy mọi thứ lên trên
-        add(Box.createVerticalGlue());
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(10, 2, 2, 2);
+        add(runButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        add(Box.createGlue(), gbc);
     }
 
     @Override
