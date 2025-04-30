@@ -4,6 +4,9 @@ package your.org.myapp.internal;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.osgi.framework.BundleContext;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelComponent;
 
 import java.util.Properties;
 
@@ -11,6 +14,7 @@ public class CyActivator extends AbstractCyActivator {
     @Override
     public void start(BundleContext context) throws Exception {
         CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
+        CySwingApplication cySwingApplication = getService(context, CySwingApplication.class);
 
         // Register CountNodesTaskFactory
         CountNodesTaskFactory countNodesFactory = new CountNodesTaskFactory(applicationManager);
@@ -84,5 +88,19 @@ public class CyActivator extends AbstractCyActivator {
         predictLinksProps.setProperty("preferredMenu", "Apps.MyApp.HeteroGNN");
         predictLinksProps.setProperty("title", "Predict Link Score (Select 2 Nodes)");
         registerService(context, predictLinksTaskFactory, org.cytoscape.work.TaskFactory.class, predictLinksProps);
+
+        // --- Đăng ký TaskFactory để hiển thị Panel ---
+        ShowPanelTaskFactory showPanelFactory = new ShowPanelTaskFactory(context, cySwingApplication);
+        Properties showPanelProps = new Properties();
+        showPanelProps.setProperty("preferredMenu", "Apps.MyApp");
+        showPanelProps.setProperty("title", "Main Function");
+        registerService(context, showPanelFactory, TaskFactory.class, showPanelProps);
+
+        // --- Đăng ký TaskFactory để ẩn Panel ---
+        HidePanelTaskFactory hidePanelFactory = new HidePanelTaskFactory(context);
+        Properties hidePanelProps = new Properties();
+        hidePanelProps.setProperty("preferredMenu", "Apps.MyApp");
+        hidePanelProps.setProperty("title", "Exit App");
+        registerService(context, hidePanelFactory, TaskFactory.class, hidePanelProps);
     }
 }
