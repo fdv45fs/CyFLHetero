@@ -3,3 +3,8 @@
 /.idea/
 /Cytoscape/.idea/
 /Cytoscape/target/
+/Python/venv/
+/Python/*.pkl
+/Python/*.pth
+Python/__pycache__/
+Python/logs/
