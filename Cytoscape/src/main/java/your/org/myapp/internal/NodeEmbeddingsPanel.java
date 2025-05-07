@@ -6,9 +6,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskIterator;
 
 // Panel hiển thị bên trái
 public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
+
+    // Services
+    private final TaskManager taskManager;
+    private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
 
     // Network Section
     private JLabel networkLabel;
@@ -25,7 +31,9 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     // Run Button
     private JButton runButton;
 
-    public NodeEmbeddingsPanel() {
+    public NodeEmbeddingsPanel(TaskManager taskManager, SendHeteroDataTaskFactory sendHeteroDataTaskFactory) {
+        this.taskManager = taskManager;
+        this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         initComponents();
         buildLayoutWithGridBag();
     }
@@ -40,7 +48,6 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
             public void actionPerformed(ActionEvent e) {
                 String selected = (String) networkTypeComboBox.getSelectedItem();
                 System.out.println("Network type selected: " + selected);
-                // TODO: Logic khi chọn network type
             }
         });
 
@@ -48,13 +55,12 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
         dimensionLabel = new JLabel("Dimension:");
         String[] dimensionOptions = {"32", "64", "128", "256"};
         dimensionComboBox = new JComboBox<>(dimensionOptions);
-        dimensionComboBox.setSelectedItem("128"); // Giá trị mặc định
+        dimensionComboBox.setSelectedItem("128");
         dimensionComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selected = (String) dimensionComboBox.getSelectedItem();
                 System.out.println("Dimension selected: " + selected);
-                // TODO: Logic khi chọn dimension
             }
         });
 
@@ -67,7 +73,6 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
             public void actionPerformed(ActionEvent e) {
                 String selected = (String) modelComboBox.getSelectedItem();
                 System.out.println("Model selected: " + selected);
-                // TODO: Logic khi chọn model (ví dụ: ẩn/hiện các tùy chọn khác)
             }
         });
 
@@ -76,13 +81,11 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
         runButton.addActionListener(new ActionListener() {
              @Override
              public void actionPerformed(ActionEvent e) {
-                 System.out.println("Run button clicked");
-                 String networkType = (String) networkTypeComboBox.getSelectedItem();
-                 String dimension = (String) dimensionComboBox.getSelectedItem();
-                 String model = (String) modelComboBox.getSelectedItem();
-                 System.out.println("Running with: Network=" + networkType +
-                                    ", Dimension=" + dimension + ", Model=" + model);
-                 // TODO: Gọi TaskFactory tương ứng để thực thi
+                 System.out.println("Run button clicked - Executing SendHeteroDataTask (like menu item)");
+                 // Tạo TaskIterator từ factory được truyền vào
+                 TaskIterator taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
+                 // Thực thi task bằng TaskManager được truyền vào
+                 taskManager.execute(taskIterator);
              }
          });
     }
