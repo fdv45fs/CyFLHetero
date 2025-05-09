@@ -8,6 +8,7 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.model.CyNetworkManager;
 
 import java.util.Properties;
 
@@ -17,6 +18,7 @@ public class CyActivator extends AbstractCyActivator {
         CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
         CySwingApplication cySwingApplication = getService(context, CySwingApplication.class);
         TaskManager taskManager = getService(context, TaskManager.class);
+        CyNetworkManager cyNetworkManager = getService(context, CyNetworkManager.class);
 
         // Register CountNodesTaskFactory
         CountNodesTaskFactory countNodesFactory = new CountNodesTaskFactory(applicationManager);
@@ -96,7 +98,8 @@ public class CyActivator extends AbstractCyActivator {
             context, 
             cySwingApplication, 
             taskManager, 
-            sendHeteroDataTaskFactory 
+            sendHeteroDataTaskFactory,
+            cyNetworkManager
         );
         Properties showPanelProps = new Properties();
         showPanelProps.setProperty("preferredMenu", "Apps.MyApp");

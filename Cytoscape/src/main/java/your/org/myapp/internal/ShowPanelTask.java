@@ -12,6 +12,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import java.awt.Component;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.model.CyNetworkManager;
 
 public class ShowPanelTask extends AbstractTask {
 
@@ -19,17 +20,20 @@ public class ShowPanelTask extends AbstractTask {
     private final CySwingApplication cySwingApplication;
     private final TaskManager taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
+    private final CyNetworkManager cyNetworkManager;
     public static final String PANEL_ID_PROPERTY = "myapp.panel.id";
     public static final String NODE_EMBEDDINGS_PANEL_ID = "nodeEmbeddingsPanel";
 
     public ShowPanelTask(BundleContext context, 
                          CySwingApplication cySwingApplication,
                          TaskManager taskManager,
-                         SendHeteroDataTaskFactory sendHeteroDataTaskFactory) {
+                         SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
+                         CyNetworkManager cyNetworkManager) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
+        this.cyNetworkManager = cyNetworkManager;
     }
 
     @Override
@@ -43,7 +47,9 @@ public class ShowPanelTask extends AbstractTask {
              return;
          }
 
-        NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, sendHeteroDataTaskFactory);
+        NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, 
+                                                          sendHeteroDataTaskFactory, 
+                                                          cyNetworkManager);
 
         Properties props = new Properties();
         ServiceRegistration registration = context.registerService(CytoPanelComponent.class.getName(), panel, props);
