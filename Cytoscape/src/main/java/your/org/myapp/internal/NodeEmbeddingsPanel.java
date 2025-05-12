@@ -41,6 +41,10 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     // Run Button
     private JButton runButton;
 
+    // Task Section (MỚI)
+    private JLabel taskLabel;
+    private JComboBox<String> taskComboBox;
+
     public NodeEmbeddingsPanel(TaskManager taskManager, SendHeteroDataTaskFactory sendHeteroDataTaskFactory, CyNetworkManager cyNetworkManager) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
@@ -111,6 +115,19 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                  taskManager.execute(taskIterator);
              }
          });
+
+        // Section Task (MỚI)
+        taskLabel = new JLabel("Task:");
+        String[] taskOptions = {"Node clustering", "Link Prediction", "Node Classification"};
+        taskComboBox = new JComboBox<>(taskOptions);
+        taskComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedTask = (String) taskComboBox.getSelectedItem();
+                System.out.println("Task selected: " + selectedTask);
+                // TODO: Logic để gọi TaskFactory tương ứng với task được chọn
+            }
+        });
     }
 
     private void populateNetworkComboBox() {
@@ -145,61 +162,85 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
         gbc.insets = new Insets(2, 2, 2, 2);
         gbc.anchor = GridBagConstraints.WEST;
 
+        int currentRow = 0;
+
+        // Hàng 0: Select Network
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = currentRow;
         gbc.weightx = 0.0;
         gbc.fill = GridBagConstraints.NONE;
         add(selectNetworkLabel, gbc);
-
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(networkSelectionComboBox, gbc);
+        currentRow++;
 
+        // Hàng 1: Network Type
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = currentRow;
         gbc.weightx = 0.0;
         gbc.fill = GridBagConstraints.NONE;
         add(networkLabel, gbc);
-
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(networkTypeComboBox, gbc);
+        currentRow++;
 
+        // Hàng 2: Dimension
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = currentRow;
         gbc.weightx = 0.0;
         gbc.fill = GridBagConstraints.NONE;
         add(dimensionLabel, gbc);
-
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(dimensionComboBox, gbc);
+        currentRow++;
 
+        // Hàng 3: Models
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = currentRow;
         gbc.weightx = 0.0;
         gbc.fill = GridBagConstraints.NONE;
         add(modelLabel, gbc);
-
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(modelComboBox, gbc);
+        currentRow++;
 
+        // Hàng 4: Run Button
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = currentRow;
         gbc.gridwidth = 2;
         gbc.weightx = 0.0;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(10, 2, 2, 2);
+        gbc.insets = new Insets(10, 2, 2, 2); // Khoảng cách trên nút Run
         add(runButton, gbc);
+        currentRow++;
+        gbc.gridwidth = 1; // Reset gridwidth
+        gbc.anchor = GridBagConstraints.WEST; // Reset anchor
+        gbc.insets = new Insets(2, 2, 2, 2); // Reset insets
 
+        // Hàng 5: Task (MỚI)
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = currentRow;
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        add(taskLabel, gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(taskComboBox, gbc);
+        currentRow++;
+
+        // Thành phần giãn nở để đẩy mọi thứ lên
+        gbc.gridx = 0;
+        gbc.gridy = currentRow;
         gbc.gridwidth = 2;
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
