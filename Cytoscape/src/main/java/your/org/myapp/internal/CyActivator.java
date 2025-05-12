@@ -7,6 +7,8 @@ import org.osgi.framework.BundleContext;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.model.CyNetworkManager;
 
 import java.util.Properties;
 
@@ -15,6 +17,8 @@ public class CyActivator extends AbstractCyActivator {
     public void start(BundleContext context) throws Exception {
         CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
         CySwingApplication cySwingApplication = getService(context, CySwingApplication.class);
+        TaskManager taskManager = getService(context, TaskManager.class);
+        CyNetworkManager cyNetworkManager = getService(context, CyNetworkManager.class);
 
         // Register CountNodesTaskFactory
         CountNodesTaskFactory countNodesFactory = new CountNodesTaskFactory(applicationManager);
@@ -71,7 +75,7 @@ public class CyActivator extends AbstractCyActivator {
         //SendHeteroData (Training Metapath2Vec)
         SendHeteroDataTaskFactory sendHeteroDataTaskFactory = new SendHeteroDataTaskFactory(applicationManager);
         Properties sendHeteroDataProps = new Properties();
-        sendHeteroDataProps.setProperty("preferredMenu", "Apps.MyApp.HeteroGNN"); // Grouped menu
+        sendHeteroDataProps.setProperty("preferredMenu", "Apps.MyApp.HeteroGNN");
         sendHeteroDataProps.setProperty("title", "Train Metapath2Vec Model");
         registerService(context, sendHeteroDataTaskFactory, org.cytoscape.work.TaskFactory.class, sendHeteroDataProps);
 
@@ -90,7 +94,13 @@ public class CyActivator extends AbstractCyActivator {
         registerService(context, predictLinksTaskFactory, org.cytoscape.work.TaskFactory.class, predictLinksProps);
 
         // --- Đăng ký TaskFactory để hiển thị Panel ---
-        ShowPanelTaskFactory showPanelFactory = new ShowPanelTaskFactory(context, cySwingApplication);
+        ShowPanelTaskFactory showPanelFactory = new ShowPanelTaskFactory(
+            context, 
+            cySwingApplication, 
+            taskManager, 
+            sendHeteroDataTaskFactory,
+            cyNetworkManager
+        );
         Properties showPanelProps = new Properties();
         showPanelProps.setProperty("preferredMenu", "Apps.MyApp");
         showPanelProps.setProperty("title", "Main Function");
