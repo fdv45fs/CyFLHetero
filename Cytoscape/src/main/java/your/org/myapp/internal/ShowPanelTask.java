@@ -13,6 +13,8 @@ import org.cytoscape.application.swing.CytoPanelState;
 import java.awt.Component;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.model.CyNetworkManager;
+import your.org.myapp.internal.PredictLinksTaskFactory;
+import your.org.myapp.internal.SendHeteroDataTaskFactory;
 
 public class ShowPanelTask extends AbstractTask {
 
@@ -20,6 +22,7 @@ public class ShowPanelTask extends AbstractTask {
     private final CySwingApplication cySwingApplication;
     private final TaskManager taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
+    private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     public static final String PANEL_ID_PROPERTY = "myapp.panel.id";
     public static final String NODE_EMBEDDINGS_PANEL_ID = "nodeEmbeddingsPanel";
@@ -28,11 +31,13 @@ public class ShowPanelTask extends AbstractTask {
                          CySwingApplication cySwingApplication,
                          TaskManager taskManager,
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
+                         PredictLinksTaskFactory predictLinksTaskFactory,
                          CyNetworkManager cyNetworkManager) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
+        this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
     }
 
@@ -49,6 +54,7 @@ public class ShowPanelTask extends AbstractTask {
 
         NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, 
                                                           sendHeteroDataTaskFactory, 
+                                                          predictLinksTaskFactory,
                                                           cyNetworkManager);
 
         Properties props = new Properties();

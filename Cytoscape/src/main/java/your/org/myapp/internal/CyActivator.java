@@ -99,6 +99,7 @@ public class CyActivator extends AbstractCyActivator {
             cySwingApplication, 
             taskManager, 
             sendHeteroDataTaskFactory,
+            predictLinksTaskFactory,
             cyNetworkManager
         );
         Properties showPanelProps = new Properties();

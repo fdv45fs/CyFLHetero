@@ -20,6 +20,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     // Services
     private final TaskManager taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
+    private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
 
     // Select Network Section
@@ -45,9 +46,10 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     private JLabel taskLabel;
     private JComboBox<String> taskComboBox;
 
-    public NodeEmbeddingsPanel(TaskManager taskManager, SendHeteroDataTaskFactory sendHeteroDataTaskFactory, CyNetworkManager cyNetworkManager) {
+    public NodeEmbeddingsPanel(TaskManager taskManager, SendHeteroDataTaskFactory sendHeteroDataTaskFactory, PredictLinksTaskFactory predictLinksTaskFactory, CyNetworkManager cyNetworkManager) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
+        this.predictLinksTaskFactory = predictLinksTaskFactory; 
         this.cyNetworkManager = cyNetworkManager;
         initComponents();
         buildLayoutWithGridBag();
@@ -110,22 +112,40 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
         runButton.addActionListener(new ActionListener() {
              @Override
              public void actionPerformed(ActionEvent e) {
-                 System.out.println("Run button clicked - Executing SendHeteroDataTask (like menu item)");
-                 TaskIterator taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
-                 taskManager.execute(taskIterator);
+                 String selectedTask = (String) taskComboBox.getSelectedItem();
+                 TaskIterator taskIterator = null;
+
+                 if ("Train Metapath2Vec Model".equals(selectedTask)) {
+                     System.out.println("Run button clicked - Executing SendHeteroDataTask (Train Metapath2Vec)");
+                     taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
+                 } else if ("Link Prediction".equals(selectedTask)) {
+                     System.out.println("Run button clicked - Executing PredictLinksTask");
+                     taskIterator = predictLinksTaskFactory.createTaskIterator();
+                 } else if ("Node Classification".equals(selectedTask)) {
+                     // TODO: Implement Node Classification Task Factory and call it here
+                     System.out.println("Node Classification selected - NOT IMPLEMENTED YET");
+                 } else {
+                     System.out.println("Run button clicked - No valid task selected or task not yet handled: " + selectedTask); 
+                 }
+
+                 if (taskIterator != null) {
+                     taskManager.execute(taskIterator);
+                 } else {
+                    JOptionPane.showMessageDialog(NodeEmbeddingsPanel.this, "Please select a valid task or implement the selected task.", "Task Error", JOptionPane.ERROR_MESSAGE);
+                 } 
              }
          });
 
         // Section Task (MỚI)
         taskLabel = new JLabel("Task:");
-        String[] taskOptions = {"Node clustering", "Link Prediction", "Node Classification"};
+        String[] taskOptions = {"Train Metapath2Vec Model", "Link Prediction", "Node Classification"}; 
         taskComboBox = new JComboBox<>(taskOptions);
         taskComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selectedTask = (String) taskComboBox.getSelectedItem();
                 System.out.println("Task selected: " + selectedTask);
-                // TODO: Logic để gọi TaskFactory tương ứng với task được chọn
+                // TODO: Logic để gọi TaskFactory tương ứng với task được chọn (đã được xử lý trong runButton)
             }
         });
     }
