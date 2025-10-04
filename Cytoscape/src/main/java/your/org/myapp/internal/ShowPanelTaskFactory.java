@@ -15,6 +15,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory; // Thêm field
+    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory; // Thêm field
 
     // Cập nhật constructor
     public ShowPanelTaskFactory(BundleContext context, 
@@ -22,13 +23,15 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
                                 TaskManager taskManager, 
                                 SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                                 CyNetworkManager cyNetworkManager,
-                                ClusterNodesTaskFactory clusterNodesTaskFactory) { // Thêm tham số
+                                ClusterNodesTaskFactory clusterNodesTaskFactory,
+                                PredictAllLinksTaskFactory predictAllLinksTaskFactory) { // Thêm tham số
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory; // Gán giá trị
     }
 
     @Override
@@ -39,7 +42,8 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
                                                 taskManager, 
                                                 sendHeteroDataTaskFactory, 
                                                 cyNetworkManager,
-                                                clusterNodesTaskFactory));
+                                                clusterNodesTaskFactory,
+                                                predictAllLinksTaskFactory));
     }
 
     @Override

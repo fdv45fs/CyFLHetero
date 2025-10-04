@@ -22,6 +22,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory; // Thêm service
+    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory; // Thêm service cho link prediction
 
     // Select Network Section
     private JLabel selectNetworkLabel;
@@ -50,11 +51,13 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     public NodeEmbeddingsPanel(TaskManager taskManager, 
                                SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                                CyNetworkManager cyNetworkManager,
-                               ClusterNodesTaskFactory clusterNodesTaskFactory) {
+                               ClusterNodesTaskFactory clusterNodesTaskFactory,
+                               PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory; // Gán giá trị
         initComponents();
         buildLayoutWithGridBag();
     }
@@ -138,6 +141,10 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                 if ("Node clustering".equals(selectedTask)) {
                     // Gọi ClusterNodesTask
                     TaskIterator taskIterator = clusterNodesTaskFactory.createTaskIterator();
+                    taskManager.execute(taskIterator);
+                } else if ("Link Prediction".equals(selectedTask)) {
+                    // Gọi PredictAllLinksTask
+                    TaskIterator taskIterator = predictAllLinksTaskFactory.createTaskIterator();
                     taskManager.execute(taskIterator);
                 } else {
                     // Thông báo cho các task chưa được cài đặt

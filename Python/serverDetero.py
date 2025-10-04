@@ -99,8 +99,9 @@ def train_metapath2vec(data: HeteroData, metapath: List[Tuple[str, str, str]], e
 def get_node_embeddings(model, data): # Lấy tất cả embedding 1 lần
     """Lấy embedding cho tất cả các nút."""
     z_dict = {}
-    for node_type in data.node_types:
-      z_dict[node_type] = model(node_type)
+    with torch.no_grad():
+        for node_type in data.node_types:
+            z_dict[node_type] = model(node_type)
     return z_dict
 
 def perform_clustering(embeddings, num_clusters=10): # Hàm clustering
@@ -206,6 +207,87 @@ def get_node_embedding(model, node_name: str, node_map):
         # Bắt lỗi nếu model không thể lấy embedding cho node_type này (ví dụ: node_type không có trong metapath)
         logging.error(f"Error getting embedding for node '{node_name}' (type: {node_type}, index: {node_index}): {e}")
         return None, None
+
+@app.route('/predict_all_links', methods=['POST'])
+def predict_all_links():
+    """Predict scores for all possible drug-gene links and return top N (optimized version)"""
+    global model, data, node_map
+    if model is None or data is None or node_map is None:
+        return jsonify({"status": "error", "message": "Model not trained"}), 400
+
+    try:
+        req_data = request.get_json()
+        top_n = req_data.get('top_n', 10)  # Default top 10 links
+        
+        logging.info(f"Predicting all possible drug-gene links, returning top {top_n}")
+        
+        # Get embeddings for all nodes
+        embeddings = get_node_embeddings(model, data)
+        
+        # Separate drug and gene nodes with embeddings
+        drug_nodes = []
+        gene_nodes = []
+        
+        if 'drug' in node_map:
+            for node_name in node_map['drug']:
+                node_index = node_map['drug'][node_name]
+                embedding = embeddings['drug'][node_index].detach().cpu()
+                drug_nodes.append({'name': node_name, 'embedding': embedding})
+        
+        if 'gene' in node_map:
+            for node_name in node_map['gene']:
+                node_index = node_map['gene'][node_name]
+                embedding = embeddings['gene'][node_index].detach().cpu()
+                gene_nodes.append({'name': node_name, 'embedding': embedding})
+        
+        logging.info(f"Found {len(drug_nodes)} drugs and {len(gene_nodes)} genes")
+        
+        # Calculate scores only between drug-gene pairs (bipartite prediction)
+        # Using vectorized operations for speed
+        if len(drug_nodes) == 0 or len(gene_nodes) == 0:
+            return jsonify({
+                "status": "error",
+                "message": "Need both drug and gene nodes for prediction"
+            }), 400
+        
+        # Stack embeddings into matrices for vectorized computation
+        drug_embeddings = torch.stack([d['embedding'] for d in drug_nodes])  # (n_drugs, embedding_dim)
+        gene_embeddings = torch.stack([g['embedding'] for g in gene_nodes])  # (n_genes, embedding_dim)
+        
+        total_possible_links = len(drug_nodes) * len(gene_nodes)
+        logging.info(f"Computing {len(drug_nodes)} × {len(gene_nodes)} = {total_possible_links:,} link scores using vectorized operations...")
+        
+        # Compute all pairwise dot products at once (MUCH FASTER!)
+        # This is the key optimization: O(N) instead of O(N²) operations
+        scores_matrix = torch.matmul(drug_embeddings, gene_embeddings.t())  # (n_drugs, n_genes)
+        
+        # Get top N scores efficiently
+        scores_flat = scores_matrix.flatten()
+        top_scores, top_indices = torch.topk(scores_flat, min(top_n, len(scores_flat)))
+        
+        # Convert indices back to drug-gene pairs
+        top_links = []
+        n_genes = len(gene_nodes)
+        for score, idx in zip(top_scores.tolist(), top_indices.tolist()):
+            drug_idx = idx // n_genes
+            gene_idx = idx % n_genes
+            top_links.append({
+                'node1': drug_nodes[drug_idx]['name'],
+                'node2': gene_nodes[gene_idx]['name'],
+                'score': score
+            })
+        
+        logging.info(f"Successfully predicted top {len(top_links)} out of {total_possible_links:,} possible drug-gene links")
+        
+        return jsonify({
+            "status": "success",
+            "top_links": top_links,
+            "total_links": total_possible_links
+        }), 200
+
+    except Exception as e:
+        logging.exception("Error during all link prediction:")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5001)
