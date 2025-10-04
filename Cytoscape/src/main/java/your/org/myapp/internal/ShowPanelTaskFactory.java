@@ -14,23 +14,36 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
     private final TaskManager taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final CyNetworkManager cyNetworkManager;
+    private final ClusterNodesTaskFactory clusterNodesTaskFactory; // Thêm field
 
-    public ShowPanelTaskFactory(BundleContext context, CySwingApplication cySwingApplication, TaskManager taskManager, SendHeteroDataTaskFactory sendHeteroDataTaskFactory, CyNetworkManager cyNetworkManager) {
+    // Cập nhật constructor
+    public ShowPanelTaskFactory(BundleContext context, 
+                                CySwingApplication cySwingApplication, 
+                                TaskManager taskManager, 
+                                SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
+                                CyNetworkManager cyNetworkManager,
+                                ClusterNodesTaskFactory clusterNodesTaskFactory) { // Thêm tham số
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
+        this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
     }
 
     @Override
     public TaskIterator createTaskIterator() {
-        return new TaskIterator(new ShowPanelTask(context, cySwingApplication, taskManager, sendHeteroDataTaskFactory, cyNetworkManager));
+        // Truyền các service vào Task
+        return new TaskIterator(new ShowPanelTask(context, 
+                                                cySwingApplication, 
+                                                taskManager, 
+                                                sendHeteroDataTaskFactory, 
+                                                cyNetworkManager,
+                                                clusterNodesTaskFactory));
     }
 
     @Override
     public boolean isReady() {
-        // Luôn sẵn sàng để mở panel (trừ khi nó đã mở, nhưng task sẽ xử lý việc đó)
         return true;
     }
 } 

@@ -21,6 +21,7 @@ public class ShowPanelTask extends AbstractTask {
     private final TaskManager taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final CyNetworkManager cyNetworkManager;
+    private final ClusterNodesTaskFactory clusterNodesTaskFactory;
     public static final String PANEL_ID_PROPERTY = "myapp.panel.id";
     public static final String NODE_EMBEDDINGS_PANEL_ID = "nodeEmbeddingsPanel";
 
@@ -28,12 +29,14 @@ public class ShowPanelTask extends AbstractTask {
                          CySwingApplication cySwingApplication,
                          TaskManager taskManager,
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
-                         CyNetworkManager cyNetworkManager) {
+                         CyNetworkManager cyNetworkManager,
+                         ClusterNodesTaskFactory clusterNodesTaskFactory) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
+        this.clusterNodesTaskFactory = clusterNodesTaskFactory;
     }
 
     @Override
@@ -49,7 +52,8 @@ public class ShowPanelTask extends AbstractTask {
 
         NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, 
                                                           sendHeteroDataTaskFactory, 
-                                                          cyNetworkManager);
+                                                          cyNetworkManager,
+                                                          clusterNodesTaskFactory);
 
         Properties props = new Properties();
         ServiceRegistration registration = context.registerService(CytoPanelComponent.class.getName(), panel, props);

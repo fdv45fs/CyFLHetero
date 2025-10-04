@@ -79,7 +79,7 @@ public class CyActivator extends AbstractCyActivator {
         sendHeteroDataProps.setProperty("title", "Train Metapath2Vec Model");
         registerService(context, sendHeteroDataTaskFactory, org.cytoscape.work.TaskFactory.class, sendHeteroDataProps);
 
-        //Clustering
+        //Clustering - Cần instance này
         ClusterNodesTaskFactory clusterNodesTaskFactory = new ClusterNodesTaskFactory(applicationManager);
         Properties clusterNodesProps = new Properties();
         clusterNodesProps.setProperty("preferredMenu", "Apps.MyApp.HeteroGNN");
@@ -94,12 +94,14 @@ public class CyActivator extends AbstractCyActivator {
         registerService(context, predictLinksTaskFactory, org.cytoscape.work.TaskFactory.class, predictLinksProps);
 
         // --- Đăng ký TaskFactory để hiển thị Panel ---
+        // Truyền thêm clusterNodesTaskFactory vào factory
         ShowPanelTaskFactory showPanelFactory = new ShowPanelTaskFactory(
             context, 
             cySwingApplication, 
             taskManager, 
             sendHeteroDataTaskFactory,
-            cyNetworkManager
+            cyNetworkManager,
+            clusterNodesTaskFactory // Thêm vào đây
         );
         Properties showPanelProps = new Properties();
         showPanelProps.setProperty("preferredMenu", "Apps.MyApp");
