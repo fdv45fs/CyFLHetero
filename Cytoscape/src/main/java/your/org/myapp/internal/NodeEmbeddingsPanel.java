@@ -22,6 +22,8 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
+    private final ClusterNodesTaskFactory clusterNodesTaskFactory; // Thêm service
+    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory; // Thêm service cho link prediction
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
 
     // Select Network Section
@@ -52,11 +54,14 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                                SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                                PredictLinksTaskFactory predictLinksTaskFactory,
                                CyNetworkManager cyNetworkManager,
-                               ClusterNodesTaskFactory clusterNodesTaskFactory) {
+                               ClusterNodesTaskFactory clusterNodesTaskFactory,
+                               PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory; 
         this.cyNetworkManager = cyNetworkManager;
+        this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory; // Gán giá trị
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
         initComponents();
         buildLayoutWithGridBag();
@@ -143,6 +148,8 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                     TaskIterator taskIterator = clusterNodesTaskFactory.createTaskIterator();
                     taskManager.execute(taskIterator);
                 } else if ("Link Prediction".equals(selectedTask)) {
+                    // Gọi PredictAllLinksTask
+                    TaskIterator taskIterator = predictAllLinksTaskFactory.createTaskIterator();
                     // Gọi PredictLinksTask
                     TaskIterator taskIterator = predictLinksTaskFactory.createTaskIterator();
                     taskManager.execute(taskIterator);

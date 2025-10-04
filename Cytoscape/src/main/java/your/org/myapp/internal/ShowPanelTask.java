@@ -23,6 +23,7 @@ public class ShowPanelTask extends AbstractTask {
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
+    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
     public static final String PANEL_ID_PROPERTY = "myapp.panel.id";
     public static final String NODE_EMBEDDINGS_PANEL_ID = "nodeEmbeddingsPanel";
 
@@ -32,7 +33,8 @@ public class ShowPanelTask extends AbstractTask {
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                          PredictLinksTaskFactory predictLinksTaskFactory,
                          CyNetworkManager cyNetworkManager,
-                         ClusterNodesTaskFactory clusterNodesTaskFactory) {
+                         ClusterNodesTaskFactory clusterNodesTaskFactory,
+                         PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
@@ -40,6 +42,7 @@ public class ShowPanelTask extends AbstractTask {
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
     }
 
     @Override
@@ -60,6 +63,11 @@ public class ShowPanelTask extends AbstractTask {
             cyNetworkManager,
             clusterNodesTaskFactory
         );
+        NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, 
+                                                          sendHeteroDataTaskFactory, 
+                                                          cyNetworkManager,
+                                                          clusterNodesTaskFactory,
+                                                          predictAllLinksTaskFactory);
 
         Properties props = new Properties();
         ServiceRegistration registration = context.registerService(CytoPanelComponent.class.getName(), panel, props);

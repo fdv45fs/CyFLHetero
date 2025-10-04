@@ -15,6 +15,8 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
+    private final ClusterNodesTaskFactory clusterNodesTaskFactory; // Thêm field
+    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory; // Thêm field
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
 
     public ShowPanelTaskFactory(BundleContext context, 
@@ -23,6 +25,8 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
                                 SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                                 PredictLinksTaskFactory predictLinksTaskFactory,
                                 CyNetworkManager cyNetworkManager,
+                                ClusterNodesTaskFactory clusterNodesTaskFactory,
+                                PredictAllLinksTaskFactory predictAllLinksTaskFactory) { // Thêm tham số
                                 ClusterNodesTaskFactory clusterNodesTaskFactory) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
@@ -30,11 +34,21 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
+        this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory; // Gán giá trị
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
     }
 
     @Override
     public TaskIterator createTaskIterator() {
+        // Truyền các service vào Task
+        return new TaskIterator(new ShowPanelTask(context, 
+                                                cySwingApplication, 
+                                                taskManager, 
+                                                sendHeteroDataTaskFactory, 
+                                                cyNetworkManager,
+                                                clusterNodesTaskFactory,
+                                                predictAllLinksTaskFactory));
         return new TaskIterator(new ShowPanelTask(
             context, 
             cySwingApplication, 

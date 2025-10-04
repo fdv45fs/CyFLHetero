@@ -93,7 +93,15 @@ public class CyActivator extends AbstractCyActivator {
         predictLinksProps.setProperty("title", "Predict Link Score (Select 2 Nodes)");
         registerService(context, predictLinksTaskFactory, org.cytoscape.work.TaskFactory.class, predictLinksProps);
 
+        //Predict All Links
+        PredictAllLinksTaskFactory predictAllLinksTaskFactory = new PredictAllLinksTaskFactory(applicationManager);
+        Properties predictAllLinksProps = new Properties();
+        predictAllLinksProps.setProperty("preferredMenu", "Apps.MyApp.HeteroGNN");
+        predictAllLinksProps.setProperty("title", "Predict All Links (Top 10)");
+        registerService(context, predictAllLinksTaskFactory, org.cytoscape.work.TaskFactory.class, predictAllLinksProps);
+
         // --- Đăng ký TaskFactory để hiển thị Panel ---
+        // Truyền thêm clusterNodesTaskFactory và predictAllLinksTaskFactory vào factory
         // Truyền các factory cần thiết vào ShowPanelTaskFactory
         ShowPanelTaskFactory showPanelFactory = new ShowPanelTaskFactory(
             context, 
@@ -102,6 +110,8 @@ public class CyActivator extends AbstractCyActivator {
             sendHeteroDataTaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
+            clusterNodesTaskFactory, // Thêm vào đây
+            predictAllLinksTaskFactory // Thêm vào đây
             clusterNodesTaskFactory
         );
         Properties showPanelProps = new Properties();
