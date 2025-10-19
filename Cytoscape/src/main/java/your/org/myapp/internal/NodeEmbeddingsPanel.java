@@ -18,7 +18,7 @@ import java.util.Collections;
 public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
 
     // Services
-    private final TaskManager taskManager;
+    private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
@@ -50,7 +50,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     private JComboBox<String> taskComboBox;
     private JButton runTaskButton;
 
-    public NodeEmbeddingsPanel(TaskManager taskManager, 
+    public NodeEmbeddingsPanel(TaskManager<?, ?> taskManager,
                                SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                                PredictLinksTaskFactory predictLinksTaskFactory,
                                CyNetworkManager cyNetworkManager,
@@ -58,6 +58,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                                PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
+        this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory; 
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
@@ -132,7 +133,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
 
         // Section Task
         taskLabel = new JLabel("Task:");
-        String[] taskOptions = {"Node clustering", "Link Prediction", "Node Classification"};
+        String[] taskOptions = {"Node clustering", "Predict Link Score (2 selected nodes)", "Predict All Links (Top 10)", "Node Classification"};
         taskComboBox = new JComboBox<>(taskOptions);
 
         // Run Task Button
@@ -142,9 +143,14 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
             public void actionPerformed(ActionEvent e) {
                 String selectedTask = (String) taskComboBox.getSelectedItem();
                 System.out.println("Run Task button clicked for: " + selectedTask);
-
+                TaskIterator taskIterator = null;
                 if ("Node clustering".equals(selectedTask)) {
                     // Gọi ClusterNodesTask
+                    taskIterator = clusterNodesTaskFactory.createTaskIterator();
+                } else if ("Predict Link Score (2 selected nodes)".equals(selectedTask)) {
+                    taskIterator = predictLinksTaskFactory.createTaskIterator();
+                } else if ("Predict All Links (Top 10)".equals(selectedTask)) {
+                    taskIterator = predictAllLinksTaskFactory.createTaskIterator();
                     TaskIterator taskIterator = clusterNodesTaskFactory.createTaskIterator();
                     taskManager.execute(taskIterator);
                 } else if ("Link Prediction".equals(selectedTask)) {
@@ -157,6 +163,10 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                     // Thông báo cho các task chưa được cài đặt
                     JOptionPane.showMessageDialog(null, selectedTask + " is not implemented yet.");
                     System.out.println(selectedTask + " is not implemented yet.");
+                }
+
+                if (taskIterator != null) {
+                    taskManager.execute(taskIterator);
                 }
             }
         });

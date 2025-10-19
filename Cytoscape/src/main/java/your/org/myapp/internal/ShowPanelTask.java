@@ -18,7 +18,7 @@ public class ShowPanelTask extends AbstractTask {
 
     private final BundleContext context;
     private final CySwingApplication cySwingApplication;
-    private final TaskManager taskManager;
+    private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
@@ -29,7 +29,7 @@ public class ShowPanelTask extends AbstractTask {
 
     public ShowPanelTask(BundleContext context, 
                          CySwingApplication cySwingApplication,
-                         TaskManager taskManager,
+                         TaskManager<?, ?> taskManager,
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                          PredictLinksTaskFactory predictLinksTaskFactory,
                          CyNetworkManager cyNetworkManager,
@@ -65,6 +65,7 @@ public class ShowPanelTask extends AbstractTask {
         );
         NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, 
                                                           sendHeteroDataTaskFactory, 
+                                                          predictLinksTaskFactory,
                                                           cyNetworkManager,
                                                           clusterNodesTaskFactory,
                                                           predictAllLinksTaskFactory);

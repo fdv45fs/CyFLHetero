@@ -126,10 +126,13 @@ def perform_clustering(embeddings, num_clusters=10): # Hàm clustering
     """Thực hiện phân cụm trên embeddings."""
     # embeddings: {node_type: Tensor}
     # Gộp embedding của tất cả node type lại
-    all_embeddings = torch.cat([embeddings[node_type] for node_type in embeddings], dim=0)
+    # Sắp xếp các node_type để đảm bảo thứ tự nhất quán
+    node_types = sorted(embeddings.keys())
+    all_embeddings = torch.cat([embeddings[node_type] for node_type in node_types], dim=0)
     kmeans = KMeans(n_clusters=num_clusters, random_state=0, n_init = 'auto')
     cluster_labels = kmeans.fit_predict(all_embeddings.cpu().detach().numpy())  # Chuyển về CPU trước khi fit
-    return cluster_labels
+    return cluster_labels, node_types
+
 
 @app.route('/receive_hetero_data', methods=['POST'])
 def receive_hetero_data():
@@ -180,6 +183,23 @@ def receive_hetero_data():
 
         logging.info(f"Successfully trained model and got {len(node_embeddings_response)} embeddings.")
         return jsonify({"status": "success", "embeddings": node_embeddings_response}), 200
+        type_embeddings = get_node_embeddings(model, data) 
+
+        # Map embeddings về tên node gốc để trả về
+        embeddings_by_original_name = {}
+        for node_type in type_embeddings:
+            # Cần đảo ngược node_map: {name: index} -> {index: name}
+            index_to_name_map = {idx: name for name, idx in node_map[node_type].items()}
+            
+            for i, emb in enumerate(type_embeddings[node_type]):
+                original_name = index_to_name_map.get(i)
+                if original_name:
+                    embeddings_by_original_name[original_name] = emb.cpu().tolist()
+                else:
+                    logging.warning(f"Could not find original name for node type {node_type} and index {i}")
+
+        logging.info(f"Successfully trained model and got {len(embeddings_by_original_name)} embeddings.")
+        return jsonify({"status": "success", "embeddings": embeddings_by_original_name}), 200
 
     except Exception as e:
         logging.exception("Error during request processing in /receive_hetero_data:")
@@ -197,14 +217,18 @@ def cluster_nodes():
 
         embeddings = get_node_embeddings(model, data, node_map)
         cluster_labels = perform_clustering(embeddings, num_clusters)
+        embeddings = get_node_embeddings(model, data)
+        cluster_labels, node_types = perform_clustering(embeddings, num_clusters)
 
         # Tạo mapping node_name -> cluster_id (sử dụng node_map)
         node_to_cluster = {}
         label_index = 0
-        for node_type in ['drug', 'gene']:
-            for node_name in node_map[node_type]:
-                node_to_cluster[node_name] = cluster_labels[label_index].item()
-                label_index += 1
+        # Dùng node_types đã sắp xếp từ perform_clustering
+        for node_type in node_types:
+            if node_type in node_map:
+                for node_name in sorted(node_map[node_type].keys(), key=lambda n: node_map[node_type][n]):
+                    node_to_cluster[node_name] = cluster_labels[label_index].item()
+                    label_index += 1
 
         return jsonify({"status": "success", "node_to_cluster": node_to_cluster}), 200
 

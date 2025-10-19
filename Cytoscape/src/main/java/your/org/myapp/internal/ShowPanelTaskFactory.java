@@ -11,7 +11,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
 
     private final BundleContext context;
     private final CySwingApplication cySwingApplication;
-    private final TaskManager taskManager;
+    private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
@@ -19,6 +19,10 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
     private final PredictAllLinksTaskFactory predictAllLinksTaskFactory; // Thêm field
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
 
+    // Cập nhật constructor
+    public ShowPanelTaskFactory(BundleContext context,
+                                CySwingApplication cySwingApplication,
+                                TaskManager<?, ?> taskManager,
     public ShowPanelTaskFactory(BundleContext context, 
                                 CySwingApplication cySwingApplication, 
                                 TaskManager taskManager, 
@@ -45,7 +49,8 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
         return new TaskIterator(new ShowPanelTask(context, 
                                                 cySwingApplication, 
                                                 taskManager, 
-                                                sendHeteroDataTaskFactory, 
+                                                sendHeteroDataTaskFactory,
+                                                predictLinksTaskFactory,
                                                 cyNetworkManager,
                                                 clusterNodesTaskFactory,
                                                 predictAllLinksTaskFactory));
