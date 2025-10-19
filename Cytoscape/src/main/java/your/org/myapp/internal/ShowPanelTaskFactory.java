@@ -11,17 +11,19 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
 
     private final BundleContext context;
     private final CySwingApplication cySwingApplication;
-    private final TaskManager taskManager;
+    private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
+    private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory; // Thêm field
     private final PredictAllLinksTaskFactory predictAllLinksTaskFactory; // Thêm field
 
     // Cập nhật constructor
-    public ShowPanelTaskFactory(BundleContext context, 
-                                CySwingApplication cySwingApplication, 
-                                TaskManager taskManager, 
+    public ShowPanelTaskFactory(BundleContext context,
+                                CySwingApplication cySwingApplication,
+                                TaskManager<?, ?> taskManager,
                                 SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
+                                PredictLinksTaskFactory predictLinksTaskFactory,
                                 CyNetworkManager cyNetworkManager,
                                 ClusterNodesTaskFactory clusterNodesTaskFactory,
                                 PredictAllLinksTaskFactory predictAllLinksTaskFactory) { // Thêm tham số
@@ -29,6 +31,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
+        this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
         this.predictAllLinksTaskFactory = predictAllLinksTaskFactory; // Gán giá trị
@@ -40,7 +43,8 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
         return new TaskIterator(new ShowPanelTask(context, 
                                                 cySwingApplication, 
                                                 taskManager, 
-                                                sendHeteroDataTaskFactory, 
+                                                sendHeteroDataTaskFactory,
+                                                predictLinksTaskFactory,
                                                 cyNetworkManager,
                                                 clusterNodesTaskFactory,
                                                 predictAllLinksTaskFactory));

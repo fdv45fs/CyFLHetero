@@ -6,7 +6,6 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.osgi.framework.BundleContext;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.model.CyNetworkManager;
 
@@ -17,7 +16,7 @@ public class CyActivator extends AbstractCyActivator {
     public void start(BundleContext context) throws Exception {
         CyApplicationManager applicationManager = getService(context, CyApplicationManager.class);
         CySwingApplication cySwingApplication = getService(context, CySwingApplication.class);
-        TaskManager taskManager = getService(context, TaskManager.class);
+        TaskManager<?, ?> taskManager = getService(context, TaskManager.class);
         CyNetworkManager cyNetworkManager = getService(context, CyNetworkManager.class);
 
         // Register CountNodesTaskFactory
@@ -107,6 +106,7 @@ public class CyActivator extends AbstractCyActivator {
             cySwingApplication, 
             taskManager, 
             sendHeteroDataTaskFactory,
+            predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory, // Thêm vào đây
             predictAllLinksTaskFactory // Thêm vào đây
