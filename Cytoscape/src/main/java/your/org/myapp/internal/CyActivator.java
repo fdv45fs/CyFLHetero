@@ -100,6 +100,8 @@ public class CyActivator extends AbstractCyActivator {
             cySwingApplication, 
             taskManager, 
             sendHeteroDataTaskFactory,
+            predictLinksTaskFactory,
+            cyNetworkManager
             cyNetworkManager,
             clusterNodesTaskFactory // Thêm vào đây
         );

@@ -96,12 +96,24 @@ def train_metapath2vec(data: HeteroData, metapath: List[Tuple[str, str, str]], e
         logging.info(f'Epoch: {epoch:02d}, Loss: {total_loss / len(loader):.4f}')
     return model
 
-def get_node_embeddings(model, data): # Lấy tất cả embedding 1 lần
-    """Lấy embedding cho tất cả các nút."""
-    z_dict = {}
-    for node_type in data.node_types:
-      z_dict[node_type] = model(node_type)
-    return z_dict
+def get_node_embeddings(model, data, node_map_param): # Thêm node_map_param
+    """Lấy embedding cho tất cả các nút và map về tên node gốc."""
+    embeddings_by_original_name = {}
+    with torch.no_grad(): # Đảm bảo không tính gradient khi lấy embeddings
+        for node_type in data.node_types:
+            # Lấy tất cả embeddings cho một node_type
+            type_embeddings = model(node_type) 
+            # Lấy map từ index -> tên gốc cho node_type hiện tại
+            # Cần đảo ngược node_map: {name: index} -> {index: name}
+            index_to_name_map = {idx: name for name, idx in node_map_param[node_type].items()}
+            
+            for i, emb in enumerate(type_embeddings):
+                original_name = index_to_name_map.get(i)
+                if original_name:
+                    embeddings_by_original_name[original_name] = emb.cpu().tolist() # Chuyển tensor sang list và về CPU
+                else:
+                    logging.warning(f"Could not find original name for node type {node_type} and index {i}")
+    return embeddings_by_original_name
 
 def perform_clustering(embeddings, num_clusters=10): # Hàm clustering
     """Thực hiện phân cụm trên embeddings."""
@@ -114,7 +126,7 @@ def perform_clustering(embeddings, num_clusters=10): # Hàm clustering
 
 @app.route('/receive_hetero_data', methods=['POST'])
 def receive_hetero_data():
-    global data, model, node_map  # Khai báo model ở đây
+    global data, model, node_map 
     try:
         req_data = request.get_json()
         logging.debug(f"Received request data: {req_data}")
@@ -125,13 +137,46 @@ def receive_hetero_data():
             return jsonify({"status": "error", "message": "Missing data"}), 400
 
         metapath_tuples = [(metapath[i], metapath[i+1], metapath[i+2]) for i in range(0, len(metapath) - 2, 2)]
-        data = create_hetero_data(edge_index)
-        model = train_metapath2vec(data, metapath_tuples)  # Gán giá trị cho model
-        return jsonify({"status": "success"}), 200
+        
+        # create_hetero_data sẽ cập nhật global node_map
+        data = create_hetero_data(edge_index) 
+        
+        if not data.node_types or not any(data[node_type].num_nodes > 0 for node_type in data.node_types):
+            logging.error("No nodes found in the created HeteroData object. Cannot train model.")
+            return jsonify({"status": "error", "message": "No nodes found in network data to train on."}), 400
+
+        # Kiểm tra xem metapath có hợp lệ với các node_types trong data không
+        valid_metapath = True
+        current_node_type = metapath_tuples[0][0] # Loại node bắt đầu của metapath
+        if current_node_type not in data.node_types:
+            valid_metapath = False
+        else:
+            for i in range(len(metapath_tuples)):
+                source_type, _, target_type = metapath_tuples[i]
+                if source_type not in data.node_types or target_type not in data.node_types:
+                    valid_metapath = False
+                    break
+                # Kiểm tra xem có edge_type tương ứng không
+                if (source_type, metapath_tuples[i][1], target_type) not in data.edge_index_dict:
+                    valid_metapath = False
+                    break
+        
+        if not valid_metapath:
+            logging.error(f"Metapath {metapath_tuples} is not valid for the current graph structure and node types: {data.node_types} and edge types: {data.edge_types}")
+            return jsonify({"status": "error", "message": f"Metapath {metapath_tuples} is not valid for the current graph structure."}), 400
+
+        model = train_metapath2vec(data, metapath_tuples) 
+        
+        # Lấy embeddings sau khi huấn luyện
+        # Hàm get_node_embeddings giờ sẽ sử dụng node_map global đã được cập nhật
+        node_embeddings_response = get_node_embeddings(model, data, node_map) 
+
+        logging.info(f"Successfully trained model and got {len(node_embeddings_response)} embeddings.")
+        return jsonify({"status": "success", "embeddings": node_embeddings_response}), 200
 
     except Exception as e:
-        logging.exception("Error during request processing:")
-        return jsonify({"status": "error", "message": str(e)}), 400
+        logging.exception("Error during request processing in /receive_hetero_data:")
+        return jsonify({"status": "error", "message": str(e)}), 500 # Changed to 500 for server errors
 
 @app.route('/cluster_nodes', methods=['POST'])
 def cluster_nodes():
@@ -143,7 +188,7 @@ def cluster_nodes():
         req_data = request.get_json()
         num_clusters = req_data.get('num_clusters', 10)
 
-        embeddings = get_node_embeddings(model, data)
+        embeddings = get_node_embeddings(model, data, node_map)
         cluster_labels = perform_clustering(embeddings, num_clusters)
 
         # Tạo mapping node_name -> cluster_id (sử dụng node_map)

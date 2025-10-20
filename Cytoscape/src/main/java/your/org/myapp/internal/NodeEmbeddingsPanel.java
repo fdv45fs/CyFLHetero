@@ -20,6 +20,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     // Services
     private final TaskManager taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
+    private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory; // Thêm service
 
@@ -51,8 +52,10 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                                SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                                CyNetworkManager cyNetworkManager,
                                ClusterNodesTaskFactory clusterNodesTaskFactory) {
+    public NodeEmbeddingsPanel(TaskManager taskManager, SendHeteroDataTaskFactory sendHeteroDataTaskFactory, PredictLinksTaskFactory predictLinksTaskFactory, CyNetworkManager cyNetworkManager) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
+        this.predictLinksTaskFactory = predictLinksTaskFactory; 
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
         initComponents();
@@ -119,12 +122,33 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                  System.out.println("Train button clicked - Executing SendHeteroDataTask");
                  TaskIterator taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
                  taskManager.execute(taskIterator);
+                 String selectedTask = (String) taskComboBox.getSelectedItem();
+                 TaskIterator taskIterator = null;
+
+                 if ("Train Metapath2Vec Model".equals(selectedTask)) {
+                     System.out.println("Run button clicked - Executing SendHeteroDataTask (Train Metapath2Vec)");
+                     taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
+                 } else if ("Link Prediction".equals(selectedTask)) {
+                     System.out.println("Run button clicked - Executing PredictLinksTask");
+                     taskIterator = predictLinksTaskFactory.createTaskIterator();
+                 } else if ("Node Classification".equals(selectedTask)) {
+                     // TODO: Implement Node Classification Task Factory and call it here
+                     System.out.println("Node Classification selected - NOT IMPLEMENTED YET");
+                 } else {
+                     System.out.println("Run button clicked - No valid task selected or task not yet handled: " + selectedTask); 
+                 }
+
+                 if (taskIterator != null) {
+                     taskManager.execute(taskIterator);
+                 } else {
+                    JOptionPane.showMessageDialog(NodeEmbeddingsPanel.this, "Please select a valid task or implement the selected task.", "Task Error", JOptionPane.ERROR_MESSAGE);
+                 } 
              }
          });
 
         // Section Task
         taskLabel = new JLabel("Task:");
-        String[] taskOptions = {"Node clustering", "Link Prediction", "Node Classification"};
+        String[] taskOptions = {"Train Metapath2Vec Model", "Link Prediction", "Node Classification"}; 
         taskComboBox = new JComboBox<>(taskOptions);
 
         // Nút Run MỚI cho Task
@@ -144,6 +168,8 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                     JOptionPane.showMessageDialog(null, selectedTask + " is not implemented yet.");
                     System.out.println(selectedTask + " is not implemented yet.");
                 }
+                System.out.println("Task selected: " + selectedTask);
+                // TODO: Logic để gọi TaskFactory tương ứng với task được chọn (đã được xử lý trong runButton)
             }
         });
     }
