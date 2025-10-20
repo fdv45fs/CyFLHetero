@@ -13,8 +13,6 @@ import org.cytoscape.application.swing.CytoPanelState;
 import java.awt.Component;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.model.CyNetworkManager;
-import your.org.myapp.internal.PredictLinksTaskFactory;
-import your.org.myapp.internal.SendHeteroDataTaskFactory;
 
 public class ShowPanelTask extends AbstractTask {
 
@@ -33,7 +31,6 @@ public class ShowPanelTask extends AbstractTask {
                          TaskManager taskManager,
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                          PredictLinksTaskFactory predictLinksTaskFactory,
-                         CyNetworkManager cyNetworkManager) {
                          CyNetworkManager cyNetworkManager,
                          ClusterNodesTaskFactory clusterNodesTaskFactory) {
         this.context = context;
@@ -56,12 +53,13 @@ public class ShowPanelTask extends AbstractTask {
              return;
          }
 
-        NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, 
-                                                          sendHeteroDataTaskFactory, 
-                                                          predictLinksTaskFactory,
-                                                          cyNetworkManager);
-                                                          cyNetworkManager,
-                                                          clusterNodesTaskFactory);
+        NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(
+            taskManager, 
+            sendHeteroDataTaskFactory, 
+            predictLinksTaskFactory,
+            cyNetworkManager,
+            clusterNodesTaskFactory
+        );
 
         Properties props = new Properties();
         ServiceRegistration registration = context.registerService(CytoPanelComponent.class.getName(), panel, props);
@@ -96,4 +94,4 @@ public class ShowPanelTask extends AbstractTask {
              System.err.println("Could not find the registered NodeEmbeddingsPanel in CytoPanel WEST.");
         }
     }
-} 
+}

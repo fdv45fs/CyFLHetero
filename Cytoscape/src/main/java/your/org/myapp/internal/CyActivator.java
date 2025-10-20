@@ -94,16 +94,15 @@ public class CyActivator extends AbstractCyActivator {
         registerService(context, predictLinksTaskFactory, org.cytoscape.work.TaskFactory.class, predictLinksProps);
 
         // --- Đăng ký TaskFactory để hiển thị Panel ---
-        // Truyền thêm clusterNodesTaskFactory vào factory
+        // Truyền các factory cần thiết vào ShowPanelTaskFactory
         ShowPanelTaskFactory showPanelFactory = new ShowPanelTaskFactory(
             context, 
             cySwingApplication, 
             taskManager, 
             sendHeteroDataTaskFactory,
             predictLinksTaskFactory,
-            cyNetworkManager
             cyNetworkManager,
-            clusterNodesTaskFactory // Thêm vào đây
+            clusterNodesTaskFactory
         );
         Properties showPanelProps = new Properties();
         showPanelProps.setProperty("preferredMenu", "Apps.MyApp");
