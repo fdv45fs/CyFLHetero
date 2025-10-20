@@ -59,6 +59,9 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
+        this.cyNetworkManager = cyNetworkManager;
+        this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory; // Gán giá trị
         this.predictLinksTaskFactory = predictLinksTaskFactory; 
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
