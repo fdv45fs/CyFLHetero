@@ -22,6 +22,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
+    private final ClusterNodesTaskFactory clusterNodesTaskFactory;
 
     // Select Network Section
     private JLabel selectNetworkLabel;
@@ -42,15 +43,21 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     // Run Button
     private JButton runButton;
 
-    // Task Section (MỚI)
+    // Task Section
     private JLabel taskLabel;
     private JComboBox<String> taskComboBox;
+    private JButton runTaskButton;
 
-    public NodeEmbeddingsPanel(TaskManager taskManager, SendHeteroDataTaskFactory sendHeteroDataTaskFactory, PredictLinksTaskFactory predictLinksTaskFactory, CyNetworkManager cyNetworkManager) {
+    public NodeEmbeddingsPanel(TaskManager taskManager, 
+                               SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
+                               PredictLinksTaskFactory predictLinksTaskFactory,
+                               CyNetworkManager cyNetworkManager,
+                               ClusterNodesTaskFactory clusterNodesTaskFactory) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory; 
         this.cyNetworkManager = cyNetworkManager;
+        this.clusterNodesTaskFactory = clusterNodesTaskFactory;
         initComponents();
         buildLayoutWithGridBag();
     }
@@ -107,45 +114,43 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
             }
         });
 
-        // Run Button
-        runButton = new JButton("Run");
+        // Train Model Button
+        runButton = new JButton("Train Model");
         runButton.addActionListener(new ActionListener() {
              @Override
              public void actionPerformed(ActionEvent e) {
-                 String selectedTask = (String) taskComboBox.getSelectedItem();
-                 TaskIterator taskIterator = null;
-
-                 if ("Train Metapath2Vec Model".equals(selectedTask)) {
-                     System.out.println("Run button clicked - Executing SendHeteroDataTask (Train Metapath2Vec)");
-                     taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
-                 } else if ("Link Prediction".equals(selectedTask)) {
-                     System.out.println("Run button clicked - Executing PredictLinksTask");
-                     taskIterator = predictLinksTaskFactory.createTaskIterator();
-                 } else if ("Node Classification".equals(selectedTask)) {
-                     // TODO: Implement Node Classification Task Factory and call it here
-                     System.out.println("Node Classification selected - NOT IMPLEMENTED YET");
-                 } else {
-                     System.out.println("Run button clicked - No valid task selected or task not yet handled: " + selectedTask); 
-                 }
-
-                 if (taskIterator != null) {
-                     taskManager.execute(taskIterator);
-                 } else {
-                    JOptionPane.showMessageDialog(NodeEmbeddingsPanel.this, "Please select a valid task or implement the selected task.", "Task Error", JOptionPane.ERROR_MESSAGE);
-                 } 
+                 System.out.println("Train button clicked - Executing SendHeteroDataTask");
+                 TaskIterator taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
+                 taskManager.execute(taskIterator);
              }
          });
 
-        // Section Task (MỚI)
+        // Section Task
         taskLabel = new JLabel("Task:");
-        String[] taskOptions = {"Train Metapath2Vec Model", "Link Prediction", "Node Classification"}; 
+        String[] taskOptions = {"Node clustering", "Link Prediction", "Node Classification"};
         taskComboBox = new JComboBox<>(taskOptions);
-        taskComboBox.addActionListener(new ActionListener() {
+
+        // Run Task Button
+        runTaskButton = new JButton("Run Task");
+        runTaskButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selectedTask = (String) taskComboBox.getSelectedItem();
-                System.out.println("Task selected: " + selectedTask);
-                // TODO: Logic để gọi TaskFactory tương ứng với task được chọn (đã được xử lý trong runButton)
+                System.out.println("Run Task button clicked for: " + selectedTask);
+
+                if ("Node clustering".equals(selectedTask)) {
+                    // Gọi ClusterNodesTask
+                    TaskIterator taskIterator = clusterNodesTaskFactory.createTaskIterator();
+                    taskManager.execute(taskIterator);
+                } else if ("Link Prediction".equals(selectedTask)) {
+                    // Gọi PredictLinksTask
+                    TaskIterator taskIterator = predictLinksTaskFactory.createTaskIterator();
+                    taskManager.execute(taskIterator);
+                } else {
+                    // Thông báo cho các task chưa được cài đặt
+                    JOptionPane.showMessageDialog(null, selectedTask + " is not implemented yet.");
+                    System.out.println(selectedTask + " is not implemented yet.");
+                }
             }
         });
     }
@@ -232,37 +237,37 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
         add(modelComboBox, gbc);
         currentRow++;
 
-        // Hàng 4: Run Button
+        // Hàng 4: Train Button
+        gbc.gridy = currentRow++;
         gbc.gridx = 0;
-        gbc.gridy = currentRow;
         gbc.gridwidth = 2;
-        gbc.weightx = 0.0;
-        gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(10, 2, 2, 2); // Khoảng cách trên nút Run
+        gbc.insets = new Insets(10, 2, 2, 2);
         add(runButton, gbc);
-        currentRow++;
-        gbc.gridwidth = 1; // Reset gridwidth
-        gbc.anchor = GridBagConstraints.WEST; // Reset anchor
-        gbc.insets = new Insets(2, 2, 2, 2); // Reset insets
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(2, 2, 2, 2);
 
-        // Hàng 5: Task (MỚI)
-        gbc.gridx = 0;
-        gbc.gridy = currentRow;
-        gbc.weightx = 0.0;
-        gbc.fill = GridBagConstraints.NONE;
-        add(taskLabel, gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(taskComboBox, gbc);
-        currentRow++;
+        // Hàng 5: Task
+        gbc.gridy = currentRow++;
+        gbc.gridx = 0; add(taskLabel, gbc);
+        gbc.gridx = 1; add(taskComboBox, gbc);
 
-        // Thành phần giãn nở để đẩy mọi thứ lên
+        // Hàng 6: Run Task Button
+        gbc.gridy = currentRow++;
         gbc.gridx = 0;
-        gbc.gridy = currentRow;
         gbc.gridwidth = 2;
-        gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(5, 2, 2, 2);
+        add(runTaskButton, gbc);
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(2, 2, 2, 2);
+
+        // Thành phần giãn nở
+        gbc.gridy = currentRow++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
         gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.BOTH;
         add(Box.createGlue(), gbc);
@@ -287,4 +292,4 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     public Icon getIcon() {
         return null;
     }
-} 
+}

@@ -13,8 +13,6 @@ import org.cytoscape.application.swing.CytoPanelState;
 import java.awt.Component;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.model.CyNetworkManager;
-import your.org.myapp.internal.PredictLinksTaskFactory;
-import your.org.myapp.internal.SendHeteroDataTaskFactory;
 
 public class ShowPanelTask extends AbstractTask {
 
@@ -24,6 +22,7 @@ public class ShowPanelTask extends AbstractTask {
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
+    private final ClusterNodesTaskFactory clusterNodesTaskFactory;
     public static final String PANEL_ID_PROPERTY = "myapp.panel.id";
     public static final String NODE_EMBEDDINGS_PANEL_ID = "nodeEmbeddingsPanel";
 
@@ -32,13 +31,15 @@ public class ShowPanelTask extends AbstractTask {
                          TaskManager taskManager,
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                          PredictLinksTaskFactory predictLinksTaskFactory,
-                         CyNetworkManager cyNetworkManager) {
+                         CyNetworkManager cyNetworkManager,
+                         ClusterNodesTaskFactory clusterNodesTaskFactory) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
+        this.clusterNodesTaskFactory = clusterNodesTaskFactory;
     }
 
     @Override
@@ -52,10 +53,13 @@ public class ShowPanelTask extends AbstractTask {
              return;
          }
 
-        NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, 
-                                                          sendHeteroDataTaskFactory, 
-                                                          predictLinksTaskFactory,
-                                                          cyNetworkManager);
+        NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(
+            taskManager, 
+            sendHeteroDataTaskFactory, 
+            predictLinksTaskFactory,
+            cyNetworkManager,
+            clusterNodesTaskFactory
+        );
 
         Properties props = new Properties();
         ServiceRegistration registration = context.registerService(CytoPanelComponent.class.getName(), panel, props);
@@ -90,4 +94,4 @@ public class ShowPanelTask extends AbstractTask {
              System.err.println("Could not find the registered NodeEmbeddingsPanel in CytoPanel WEST.");
         }
     }
-} 
+}
