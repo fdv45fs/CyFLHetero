@@ -22,9 +22,8 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
-    private final ClusterNodesTaskFactory clusterNodesTaskFactory; // Thêm service
-    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory; // Thêm service cho link prediction
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
+    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
 
     // Select Network Section
     private JLabel selectNetworkLabel;
@@ -58,15 +57,10 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                                PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
-        this.predictLinksTaskFactory = predictLinksTaskFactory;
-        this.cyNetworkManager = cyNetworkManager;
-        this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
-        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory; // Gán giá trị
         this.predictLinksTaskFactory = predictLinksTaskFactory; 
         this.cyNetworkManager = cyNetworkManager;
-        this.clusterNodesTaskFactory = clusterNodesTaskFactory; // Gán giá trị
-        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory; // Gán giá trị
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
         initComponents();
         buildLayoutWithGridBag();
     }
@@ -146,24 +140,16 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
             public void actionPerformed(ActionEvent e) {
                 String selectedTask = (String) taskComboBox.getSelectedItem();
                 System.out.println("Run Task button clicked for: " + selectedTask);
+                
                 TaskIterator taskIterator = null;
+                
                 if ("Node clustering".equals(selectedTask)) {
-                    // Gọi ClusterNodesTask
                     taskIterator = clusterNodesTaskFactory.createTaskIterator();
                 } else if ("Predict Link Score (2 selected nodes)".equals(selectedTask)) {
                     taskIterator = predictLinksTaskFactory.createTaskIterator();
                 } else if ("Predict All Links (Top 10)".equals(selectedTask)) {
                     taskIterator = predictAllLinksTaskFactory.createTaskIterator();
-                    TaskIterator taskIterator = clusterNodesTaskFactory.createTaskIterator();
-                    taskManager.execute(taskIterator);
-                } else if ("Link Prediction".equals(selectedTask)) {
-                    // Gọi PredictAllLinksTask
-                    TaskIterator taskIterator = predictAllLinksTaskFactory.createTaskIterator();
-                    // Gọi PredictLinksTask
-                    TaskIterator taskIterator = predictLinksTaskFactory.createTaskIterator();
-                    taskManager.execute(taskIterator);
                 } else {
-                    // Thông báo cho các task chưa được cài đặt
                     JOptionPane.showMessageDialog(null, selectedTask + " is not implemented yet.");
                     System.out.println(selectedTask + " is not implemented yet.");
                 }

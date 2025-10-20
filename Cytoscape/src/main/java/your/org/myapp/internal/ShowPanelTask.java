@@ -61,14 +61,9 @@ public class ShowPanelTask extends AbstractTask {
             sendHeteroDataTaskFactory, 
             predictLinksTaskFactory,
             cyNetworkManager,
-            clusterNodesTaskFactory
+            clusterNodesTaskFactory,
+            predictAllLinksTaskFactory
         );
-        NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(taskManager, 
-                                                          sendHeteroDataTaskFactory, 
-                                                          predictLinksTaskFactory,
-                                                          cyNetworkManager,
-                                                          clusterNodesTaskFactory,
-                                                          predictAllLinksTaskFactory);
 
         Properties props = new Properties();
         ServiceRegistration registration = context.registerService(CytoPanelComponent.class.getName(), panel, props);
