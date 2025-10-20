@@ -11,19 +11,21 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
 
     private final BundleContext context;
     private final CySwingApplication cySwingApplication;
-    private final TaskManager taskManager;
+    private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
+    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
 
     public ShowPanelTaskFactory(BundleContext context, 
                                 CySwingApplication cySwingApplication, 
-                                TaskManager taskManager, 
+                                TaskManager<?, ?> taskManager,
                                 SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                                 PredictLinksTaskFactory predictLinksTaskFactory,
                                 CyNetworkManager cyNetworkManager,
-                                ClusterNodesTaskFactory clusterNodesTaskFactory) {
+                                ClusterNodesTaskFactory clusterNodesTaskFactory,
+                                PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
@@ -31,6 +33,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
     }
 
     @Override
@@ -42,7 +45,8 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
             sendHeteroDataTaskFactory, 
             predictLinksTaskFactory,
             cyNetworkManager,
-            clusterNodesTaskFactory
+            clusterNodesTaskFactory,
+            predictAllLinksTaskFactory
         ));
     }
 

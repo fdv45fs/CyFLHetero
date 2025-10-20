@@ -18,21 +18,23 @@ public class ShowPanelTask extends AbstractTask {
 
     private final BundleContext context;
     private final CySwingApplication cySwingApplication;
-    private final TaskManager taskManager;
+    private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
+    private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
     public static final String PANEL_ID_PROPERTY = "myapp.panel.id";
     public static final String NODE_EMBEDDINGS_PANEL_ID = "nodeEmbeddingsPanel";
 
     public ShowPanelTask(BundleContext context, 
                          CySwingApplication cySwingApplication,
-                         TaskManager taskManager,
+                         TaskManager<?, ?> taskManager,
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                          PredictLinksTaskFactory predictLinksTaskFactory,
                          CyNetworkManager cyNetworkManager,
-                         ClusterNodesTaskFactory clusterNodesTaskFactory) {
+                         ClusterNodesTaskFactory clusterNodesTaskFactory,
+                         PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
@@ -40,6 +42,7 @@ public class ShowPanelTask extends AbstractTask {
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
+        this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
     }
 
     @Override
@@ -58,7 +61,8 @@ public class ShowPanelTask extends AbstractTask {
             sendHeteroDataTaskFactory, 
             predictLinksTaskFactory,
             cyNetworkManager,
-            clusterNodesTaskFactory
+            clusterNodesTaskFactory,
+            predictAllLinksTaskFactory
         );
 
         Properties props = new Properties();
