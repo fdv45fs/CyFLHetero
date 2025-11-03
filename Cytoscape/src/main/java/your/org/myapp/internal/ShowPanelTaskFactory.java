@@ -6,6 +6,7 @@ import org.osgi.framework.BundleContext;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.event.CyEventHelper;
 
 public class ShowPanelTaskFactory extends AbstractTaskFactory {
 
@@ -17,6 +18,9 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
     private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
+    private final org.cytoscape.application.CyApplicationManager applicationManager;
+    private final org.cytoscape.view.model.CyNetworkViewManager networkViewManager;
+    private final CyEventHelper eventHelper;
 
     public ShowPanelTaskFactory(BundleContext context, 
                                 CySwingApplication cySwingApplication, 
@@ -25,7 +29,10 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
                                 PredictLinksTaskFactory predictLinksTaskFactory,
                                 CyNetworkManager cyNetworkManager,
                                 ClusterNodesTaskFactory clusterNodesTaskFactory,
-                                PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
+                                PredictAllLinksTaskFactory predictAllLinksTaskFactory,
+                                org.cytoscape.application.CyApplicationManager applicationManager,
+                                org.cytoscape.view.model.CyNetworkViewManager networkViewManager,
+                                CyEventHelper eventHelper) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
@@ -34,6 +41,9 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
         this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
+        this.applicationManager = applicationManager;
+        this.networkViewManager = networkViewManager;
+        this.eventHelper = eventHelper;
     }
 
     @Override
@@ -46,7 +56,10 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,
-            predictAllLinksTaskFactory
+            predictAllLinksTaskFactory,
+            applicationManager,
+            networkViewManager,
+            eventHelper
         ));
     }
 

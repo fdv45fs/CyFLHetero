@@ -13,6 +13,9 @@ import org.cytoscape.application.swing.CytoPanelState;
 import java.awt.Component;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.NetworkDestroyedListener;
 
 public class ShowPanelTask extends AbstractTask {
 
@@ -24,6 +27,9 @@ public class ShowPanelTask extends AbstractTask {
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
     private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
+    private final org.cytoscape.application.CyApplicationManager applicationManager;
+    private final org.cytoscape.view.model.CyNetworkViewManager networkViewManager;
+    private final CyEventHelper eventHelper;
     public static final String PANEL_ID_PROPERTY = "myapp.panel.id";
     public static final String NODE_EMBEDDINGS_PANEL_ID = "nodeEmbeddingsPanel";
 
@@ -34,7 +40,10 @@ public class ShowPanelTask extends AbstractTask {
                          PredictLinksTaskFactory predictLinksTaskFactory,
                          CyNetworkManager cyNetworkManager,
                          ClusterNodesTaskFactory clusterNodesTaskFactory,
-                         PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
+                         PredictAllLinksTaskFactory predictAllLinksTaskFactory,
+                         org.cytoscape.application.CyApplicationManager applicationManager,
+                         org.cytoscape.view.model.CyNetworkViewManager networkViewManager,
+                         CyEventHelper eventHelper) {
         this.context = context;
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
@@ -43,6 +52,9 @@ public class ShowPanelTask extends AbstractTask {
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
         this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
+        this.applicationManager = applicationManager;
+        this.networkViewManager = networkViewManager;
+        this.eventHelper = eventHelper;
     }
 
     @Override
@@ -62,15 +74,22 @@ public class ShowPanelTask extends AbstractTask {
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,
-            predictAllLinksTaskFactory
+            predictAllLinksTaskFactory,
+            applicationManager,
+            networkViewManager
         );
 
+        // Register panel as CytoPanelComponent
         Properties props = new Properties();
         ServiceRegistration registration = context.registerService(CytoPanelComponent.class.getName(), panel, props);
 
+        // Register panel as network event listeners to auto-refresh dropdown
+        context.registerService(NetworkAddedListener.class.getName(), panel, new Properties());
+        context.registerService(NetworkDestroyedListener.class.getName(), panel, new Properties());
+
         HidePanelTask.panelRegistration = registration;
 
-        System.out.println("Node Embeddings Panel registered.");
+        System.out.println("Node Embeddings Panel registered with network event listeners.");
         taskMonitor.setStatusMessage("Panel opened and selected.");
 
         selectAndShowPanel();

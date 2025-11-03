@@ -13,9 +13,13 @@ import org.cytoscape.model.CyNetwork;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkDestroyedListener;
+import org.cytoscape.model.events.NetworkDestroyedEvent;
 
 // Panel hiển thị bên trái
-public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
+public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, NetworkAddedListener, NetworkDestroyedListener {
 
     // Services
     private final TaskManager<?, ?> taskManager;
@@ -24,6 +28,13 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
     private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
+    
+    // Need ApplicationManager to get and set current network
+    private org.cytoscape.application.CyApplicationManager applicationManager;
+    private org.cytoscape.view.model.CyNetworkViewManager networkViewManager;
+    
+    // Flag to prevent circular updates
+    private boolean isUpdatingDropdown = false;
 
     // Select Network Section
     private JLabel selectNetworkLabel;
@@ -54,29 +65,42 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
                                PredictLinksTaskFactory predictLinksTaskFactory,
                                CyNetworkManager cyNetworkManager,
                                ClusterNodesTaskFactory clusterNodesTaskFactory,
-                               PredictAllLinksTaskFactory predictAllLinksTaskFactory) {
+                               PredictAllLinksTaskFactory predictAllLinksTaskFactory,
+                               org.cytoscape.application.CyApplicationManager applicationManager,
+                               org.cytoscape.view.model.CyNetworkViewManager networkViewManager) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory; 
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
         this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
+        this.applicationManager = applicationManager;
+        this.networkViewManager = networkViewManager;
         initComponents();
         buildLayoutWithGridBag();
     }
 
     private void initComponents() {
-        // Section Select Network
+        // Section Select Network (User can switch network from here)
         selectNetworkLabel = new JLabel("Select Network:");
         networkSelectionComboBox = new JComboBox<>();
-        populateNetworkComboBox();
+        populateNetworkDropdown(); // Show all networks
+        
+        // Add listener to switch network when user selects
         networkSelectionComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String selectedNetworkName = (String) networkSelectionComboBox.getSelectedItem();
-                if (selectedNetworkName != null && !selectedNetworkName.equals("No networks loaded")) {
-                    System.out.println("Network selected from dropdown: " + selectedNetworkName);
+                if (isUpdatingDropdown) {
+                    return; // Prevent circular updates
                 }
+                
+                String selectedNetworkName = (String) networkSelectionComboBox.getSelectedItem();
+                if (selectedNetworkName == null || selectedNetworkName.equals("No networks loaded")) {
+                    return;
+                }
+                
+                // Find and switch to the selected network
+                switchToNetwork(selectedNetworkName);
             }
         });
 
@@ -161,28 +185,136 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent {
         });
     }
 
-    private void populateNetworkComboBox() {
-        Set<CyNetwork> networks = cyNetworkManager.getNetworkSet();
+    /**
+     * Populate dropdown with all available networks and auto-select current one
+     */
+    private void populateNetworkDropdown() {
+        isUpdatingDropdown = true; // Prevent ActionListener from firing
+        
         networkSelectionComboBox.removeAllItems();
-
+        
+        Set<CyNetwork> networks = cyNetworkManager.getNetworkSet();
+        
         if (networks.isEmpty()) {
             networkSelectionComboBox.addItem("No networks loaded");
             networkSelectionComboBox.setEnabled(false);
-        } else {
-            ArrayList<String> networkNames = new ArrayList<>();
-            for (CyNetwork network : networks) {
-                String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-                if (networkName == null || networkName.trim().isEmpty()) {
-                    networkName = "Network SUID: " + network.getSUID();
-                }
-                networkNames.add(networkName);
-            }
-            Collections.sort(networkNames);
-            for (String name : networkNames) {
-                networkSelectionComboBox.addItem(name);
-            }
-            networkSelectionComboBox.setEnabled(true);
+            isUpdatingDropdown = false;
+            return;
         }
+        
+        // Get current network to auto-select it
+        CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
+        String currentNetworkName = null;
+        
+        if (currentNetwork != null) {
+            currentNetworkName = currentNetwork.getRow(currentNetwork).get(CyNetwork.NAME, String.class);
+            if (currentNetworkName == null || currentNetworkName.trim().isEmpty()) {
+                currentNetworkName = "Network SUID: " + currentNetwork.getSUID();
+            }
+        }
+        
+        // Add all networks to dropdown, sorted by name
+        ArrayList<String> networkNames = new ArrayList<>();
+        for (CyNetwork network : networks) {
+            String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
+            if (networkName == null || networkName.trim().isEmpty()) {
+                networkName = "Network SUID: " + network.getSUID();
+            }
+            networkNames.add(networkName);
+        }
+        Collections.sort(networkNames);
+        
+        for (String name : networkNames) {
+            networkSelectionComboBox.addItem(name);
+        }
+        
+        // Auto-select current network
+        if (currentNetworkName != null) {
+            networkSelectionComboBox.setSelectedItem(currentNetworkName);
+            System.out.println("Auto-selected current network: " + currentNetworkName);
+        }
+        
+        networkSelectionComboBox.setEnabled(true);
+        isUpdatingDropdown = false;
+    }
+    
+    /**
+     * Switch to the network with the given name
+     */
+    private void switchToNetwork(String networkName) {
+        if (networkName == null) {
+            return;
+        }
+        
+        // Find network by name
+        CyNetwork targetNetwork = null;
+        for (CyNetwork network : cyNetworkManager.getNetworkSet()) {
+            String name = network.getRow(network).get(CyNetwork.NAME, String.class);
+            if (name == null || name.trim().isEmpty()) {
+                name = "Network SUID: " + network.getSUID();
+            }
+            
+            if (networkName.equals(name)) {
+                targetNetwork = network;
+                break;
+            }
+        }
+        
+        if (targetNetwork == null) {
+            System.err.println("Network not found: " + networkName);
+            return;
+        }
+        
+        // Switch current network
+        applicationManager.setCurrentNetwork(targetNetwork);
+        System.out.println("Switched to network: " + networkName);
+        
+        // Also switch view if available
+        java.util.Collection<org.cytoscape.view.model.CyNetworkView> views = 
+            networkViewManager.getNetworkViews(targetNetwork);
+        
+        if (!views.isEmpty()) {
+            org.cytoscape.view.model.CyNetworkView view = views.iterator().next();
+            applicationManager.setCurrentNetworkView(view);
+            System.out.println("Switched to network view for: " + networkName);
+        }
+    }
+    
+    /**
+     * Refresh the dropdown to show all networks and auto-select current one
+     */
+    public void refreshNetworkDropdown() {
+        populateNetworkDropdown();
+    }
+    
+    /**
+     * Listen for network added events and refresh dropdown
+     */
+    @Override
+    public void handleEvent(NetworkAddedEvent e) {
+        System.out.println("Network added detected - refreshing dropdown");
+        // Use SwingUtilities to ensure UI update happens on EDT
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                populateNetworkDropdown();
+            }
+        });
+    }
+    
+    /**
+     * Listen for network destroyed events and refresh dropdown
+     */
+    @Override
+    public void handleEvent(NetworkDestroyedEvent e) {
+        System.out.println("Network destroyed detected - refreshing dropdown");
+        // Use SwingUtilities to ensure UI update happens on EDT
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                populateNetworkDropdown();
+            }
+        });
     }
 
     private void buildLayoutWithGridBag() {
