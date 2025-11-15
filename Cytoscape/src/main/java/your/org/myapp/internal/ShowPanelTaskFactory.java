@@ -14,6 +14,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
     private final CySwingApplication cySwingApplication;
     private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
+    private final SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
@@ -26,6 +27,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
                                 CySwingApplication cySwingApplication, 
                                 TaskManager<?, ?> taskManager,
                                 SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
+                                SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory,
                                 PredictLinksTaskFactory predictLinksTaskFactory,
                                 CyNetworkManager cyNetworkManager,
                                 ClusterNodesTaskFactory clusterNodesTaskFactory,
@@ -37,6 +39,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
+        this.sendEdgeIndicesTaskFactory = sendEdgeIndicesTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
@@ -52,7 +55,8 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
             context, 
             cySwingApplication, 
             taskManager, 
-            sendHeteroDataTaskFactory, 
+            sendHeteroDataTaskFactory,
+            sendEdgeIndicesTaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,

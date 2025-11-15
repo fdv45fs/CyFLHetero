@@ -49,18 +49,8 @@ public class CyActivator extends AbstractCyActivator {
         displayEdgeIndicesProps.setProperty("title", "Display Edge Indices");
         registerService(context, displayEdgeIndicesTaskFactory, org.cytoscape.work.TaskFactory.class, displayEdgeIndicesProps);
 
-        //Node2Vec training
+        // Node2Vec training factory (no longer in menu, used by panel)
         SendEdgeIndicesTaskFactory sendEdgeIndexTaskFactory = new SendEdgeIndicesTaskFactory(applicationManager);
-        Properties sendEdgeIndexProps = new Properties();
-        sendEdgeIndexProps.setProperty("preferredMenu", "Apps.MyApp");
-        sendEdgeIndexProps.setProperty("title", "Train on Node2Vec");
-        registerService(context, sendEdgeIndexTaskFactory, org.cytoscape.work.TaskFactory.class, sendEdgeIndexProps);
-        //Node2Vec prediction
-        predictNodeNode2VecTaskFactory predictNodeNode2VecTaskFactory = new predictNodeNode2VecTaskFactory(applicationManager);
-        Properties predictNodeN2VProps = new Properties();
-        predictNodeN2VProps.setProperty("preferredMenu", "Apps.MyApp");
-        predictNodeN2VProps.setProperty("title", "Predict class for Node2Vec");
-        registerService(context, predictNodeNode2VecTaskFactory, org.cytoscape.work.TaskFactory.class, predictNodeN2VProps);
 
         //GCN training
         SendEdgeIndicesAndNodeFeatureTaskFactory sendEdgeIndicesAndNodeFeatureTaskFactory = new SendEdgeIndicesAndNodeFeatureTaskFactory(applicationManager);
@@ -109,6 +99,7 @@ public class CyActivator extends AbstractCyActivator {
             cySwingApplication, 
             taskManager, 
             sendHeteroDataTaskFactory,
+            sendEdgeIndexTaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,

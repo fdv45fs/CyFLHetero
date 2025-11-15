@@ -104,5 +104,49 @@ def predict_node_label_GCN_endpoint():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
 
+@app.route('/cluster_nodes', methods=['POST'])
+def cluster_nodes_node2vec():
+    """Cluster all nodes using Node2Vec embeddings"""
+    import pickle
+    from sklearn.cluster import KMeans
+    
+    try:
+        # Get number of clusters from request (default 10)
+        data = request.get_json()
+        num_clusters = data.get('num_clusters', 10)
+        
+        # Load embeddings and node mapping from Node2Vec training
+        try:
+            with open("Node2Vec_embeddings.pkl", "rb") as f:
+                saved_data = pickle.load(f)
+                embeddings = saved_data["embeddings"]
+                node_mapping = saved_data["node_mapping"]
+        except FileNotFoundError:
+            return jsonify({
+                "status": "error", 
+                "message": "Model not trained. Please train Node2Vec first."
+            }), 400
+        
+        # Perform K-Means clustering on all embeddings
+        kmeans = KMeans(n_clusters=num_clusters, random_state=0)
+        kmeans.fit(embeddings)
+        cluster_labels = kmeans.labels_
+        
+        # Create mapping: node_name -> cluster_id
+        node_to_cluster = {}
+        for node_name, node_idx in node_mapping.items():
+            node_to_cluster[node_name] = int(cluster_labels[node_idx])
+        
+        return jsonify({
+            "status": "success",
+            "node_to_cluster": node_to_cluster
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error during clustering: {str(e)}"
+        }), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)

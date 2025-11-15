@@ -23,6 +23,7 @@ public class ShowPanelTask extends AbstractTask {
     private final CySwingApplication cySwingApplication;
     private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
+    private final SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
@@ -37,6 +38,7 @@ public class ShowPanelTask extends AbstractTask {
                          CySwingApplication cySwingApplication,
                          TaskManager<?, ?> taskManager,
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
+                         SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory,
                          PredictLinksTaskFactory predictLinksTaskFactory,
                          CyNetworkManager cyNetworkManager,
                          ClusterNodesTaskFactory clusterNodesTaskFactory,
@@ -48,6 +50,7 @@ public class ShowPanelTask extends AbstractTask {
         this.cySwingApplication = cySwingApplication;
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
+        this.sendEdgeIndicesTaskFactory = sendEdgeIndicesTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
@@ -70,7 +73,8 @@ public class ShowPanelTask extends AbstractTask {
 
         NodeEmbeddingsPanel panel = new NodeEmbeddingsPanel(
             taskManager, 
-            sendHeteroDataTaskFactory, 
+            sendHeteroDataTaskFactory,
+            sendEdgeIndicesTaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,

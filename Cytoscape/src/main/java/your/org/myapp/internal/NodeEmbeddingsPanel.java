@@ -24,6 +24,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
     // Services
     private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
+    private final SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
@@ -62,6 +63,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
 
     public NodeEmbeddingsPanel(TaskManager<?, ?> taskManager,
                                SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
+                               SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory,
                                PredictLinksTaskFactory predictLinksTaskFactory,
                                CyNetworkManager cyNetworkManager,
                                ClusterNodesTaskFactory clusterNodesTaskFactory,
@@ -70,7 +72,8 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
                                org.cytoscape.view.model.CyNetworkViewManager networkViewManager) {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
-        this.predictLinksTaskFactory = predictLinksTaskFactory; 
+        this.sendEdgeIndicesTaskFactory = sendEdgeIndicesTaskFactory;
+        this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
         this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
@@ -131,13 +134,15 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
 
         // Section Models
         modelLabel = new JLabel("Model:");
-        String[] modelOptions = {"MetaPath2Vec", "Others"};
+        String[] modelOptions = {"MetaPath2Vec", "Node2Vec"};
         modelComboBox = new JComboBox<>(modelOptions);
         modelComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selected = (String) modelComboBox.getSelectedItem();
                 System.out.println("Model selected: " + selected);
+                // Update global state so tasks know which model is selected
+                ModelState.setCurrentModel(selected);
             }
         });
 
@@ -146,9 +151,23 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
         runButton.addActionListener(new ActionListener() {
              @Override
              public void actionPerformed(ActionEvent e) {
-                 System.out.println("Train button clicked - Executing SendHeteroDataTask");
-                 TaskIterator taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
-                 taskManager.execute(taskIterator);
+                 String selectedModel = (String) modelComboBox.getSelectedItem();
+                 TaskIterator taskIterator = null;
+                 
+                 if ("MetaPath2Vec".equals(selectedModel)) {
+                     System.out.println("Train button clicked - Training MetaPath2Vec");
+                     taskIterator = sendHeteroDataTaskFactory.createTaskIterator();
+                 } else if ("Node2Vec".equals(selectedModel)) {
+                     System.out.println("Train button clicked - Training Node2Vec");
+                     taskIterator = sendEdgeIndicesTaskFactory.createTaskIterator();
+                 } else {
+                     JOptionPane.showMessageDialog(null, "Please select a valid model (MetaPath2Vec or Node2Vec)");
+                     return;
+                 }
+                 
+                 if (taskIterator != null) {
+                     taskManager.execute(taskIterator);
+                 }
              }
          });
 
