@@ -24,6 +24,9 @@ public class ShowPanelTask extends AbstractTask {
     private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory;
+    private final SendEdgeIndicesAndNodeFeatureTaskFactory sendEdgeIndicesAndNodeFeatureTaskFactory;
+    private final SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory;
+    private final SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
@@ -39,6 +42,9 @@ public class ShowPanelTask extends AbstractTask {
                          TaskManager<?, ?> taskManager,
                          SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                          SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory,
+                         SendEdgeIndicesAndNodeFeatureTaskFactory sendEdgeIndicesAndNodeFeatureTaskFactory,
+                         SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory,
+                         SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory,
                          PredictLinksTaskFactory predictLinksTaskFactory,
                          CyNetworkManager cyNetworkManager,
                          ClusterNodesTaskFactory clusterNodesTaskFactory,
@@ -51,6 +57,9 @@ public class ShowPanelTask extends AbstractTask {
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.sendEdgeIndicesTaskFactory = sendEdgeIndicesTaskFactory;
+        this.sendEdgeIndicesAndNodeFeatureTaskFactory = sendEdgeIndicesAndNodeFeatureTaskFactory;
+        this.sendEdgeIndicesAndNodeFeatureGATTaskFactory = sendEdgeIndicesAndNodeFeatureGATTaskFactory;
+        this.sendEdgeIndicesDGITaskFactory = sendEdgeIndicesDGITaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
@@ -75,6 +84,9 @@ public class ShowPanelTask extends AbstractTask {
             taskManager, 
             sendHeteroDataTaskFactory,
             sendEdgeIndicesTaskFactory,
+            sendEdgeIndicesAndNodeFeatureTaskFactory,
+            sendEdgeIndicesAndNodeFeatureGATTaskFactory,
+            sendEdgeIndicesDGITaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,

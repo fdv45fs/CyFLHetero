@@ -26,6 +26,9 @@ public class ClusterNodesTask extends AbstractTask {
     // Server URLs for different models
     private static final String METAPATH2VEC_SERVER_URL = "http://localhost:5001/cluster_nodes"; // MetaPath2Vec (hetero)
     private static final String NODE2VEC_SERVER_URL = "http://localhost:5000/cluster_nodes";     // Node2Vec (homo)
+    private static final String GCN_SERVER_URL = "http://localhost:5000/cluster_nodes";          // GCN (homo) - not implemented yet
+    private static final String GAT_SERVER_URL = "http://localhost:5000/cluster_nodes_GAT";      // GAT (homo)
+    private static final String DGI_SERVER_URL = "http://localhost:5000/cluster_nodes_DGI";      // DGI (homo)
     
     private final CyApplicationManager applicationManager;
     private static final Gson gson = new Gson();
@@ -52,6 +55,16 @@ public class ClusterNodesTask extends AbstractTask {
         } else if ("Node2Vec".equals(currentModel)) {
             serverUrl = NODE2VEC_SERVER_URL;
             taskMonitor.setStatusMessage("Clustering nodes using Node2Vec model (port 5000)...");
+        } else if ("GCN".equals(currentModel)) {
+            taskMonitor.setStatusMessage("Node clustering for GCN is not implemented yet.");
+            System.err.println("[ClusterNodesTask] GCN clustering not implemented");
+            return;
+        } else if ("GAT".equals(currentModel)) {
+            serverUrl = GAT_SERVER_URL;
+            taskMonitor.setStatusMessage("Clustering nodes using GAT model (port 5000)...");
+        } else if ("DGI".equals(currentModel)) {
+            serverUrl = DGI_SERVER_URL;
+            taskMonitor.setStatusMessage("Clustering nodes using DGI model (port 5000)...");
         } else {
             taskMonitor.setStatusMessage("Unknown model selected: " + currentModel);
             return;
