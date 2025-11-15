@@ -23,7 +23,10 @@ import org.cytoscape.work.TaskMonitor;
 import java.util.Map;
 
 public class ClusterNodesTask extends AbstractTask {
-    private static final String SERVER_URL = "http://localhost:5001/cluster_nodes"; // URL mới
+    // Server URLs for different models
+    private static final String METAPATH2VEC_SERVER_URL = "http://localhost:5001/cluster_nodes"; // MetaPath2Vec (hetero)
+    private static final String NODE2VEC_SERVER_URL = "http://localhost:5000/cluster_nodes";     // Node2Vec (homo)
+    
     private final CyApplicationManager applicationManager;
     private static final Gson gson = new Gson();
 
@@ -39,6 +42,23 @@ public class ClusterNodesTask extends AbstractTask {
             return;
         }
 
+        // Check which model is currently selected
+        String currentModel = ModelState.getCurrentModel();
+        String serverUrl;
+        
+        if ("MetaPath2Vec".equals(currentModel)) {
+            serverUrl = METAPATH2VEC_SERVER_URL;
+            taskMonitor.setStatusMessage("Clustering nodes using MetaPath2Vec model (port 5001)...");
+        } else if ("Node2Vec".equals(currentModel)) {
+            serverUrl = NODE2VEC_SERVER_URL;
+            taskMonitor.setStatusMessage("Clustering nodes using Node2Vec model (port 5000)...");
+        } else {
+            taskMonitor.setStatusMessage("Unknown model selected: " + currentModel);
+            return;
+        }
+        
+        System.out.println("[ClusterNodesTask] Using model: " + currentModel + ", URL: " + serverUrl);
+
         // Tạo request body (có thể cấu hình số cụm từ người dùng)
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("num_clusters", 10); // Số cụm mặc định
@@ -46,7 +66,7 @@ public class ClusterNodesTask extends AbstractTask {
         // Gửi request đến server
         String responseString = null;
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpPost httpPost = new HttpPost(SERVER_URL);
+            HttpPost httpPost = new HttpPost(serverUrl);
             httpPost.setHeader("Content-Type", "application/json");
             httpPost.setEntity(new StringEntity(gson.toJson(requestBody)));
 
