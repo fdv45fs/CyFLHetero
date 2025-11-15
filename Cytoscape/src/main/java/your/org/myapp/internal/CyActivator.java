@@ -65,6 +65,22 @@ public class CyActivator extends AbstractCyActivator {
         predictNodeGCNProps.setProperty("title", "Predict class for GCN");
         registerService(context, predictNodeGCNTaskFactory, org.cytoscape.work.TaskFactory.class, predictNodeGCNProps);
 
+        //GAT training (for node clustering via panel)
+        SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory = new SendEdgeIndicesAndNodeFeatureGATTaskFactory(applicationManager);
+        Properties sendEdgeIndicesAndNodeFeatureGATProps = new Properties();
+        sendEdgeIndicesAndNodeFeatureGATProps.setProperty("preferredMenu", "Apps.MyApp");
+        sendEdgeIndicesAndNodeFeatureGATProps.setProperty("title", "Train on GAT");
+        registerService(context, sendEdgeIndicesAndNodeFeatureGATTaskFactory, org.cytoscape.work.TaskFactory.class, sendEdgeIndicesAndNodeFeatureGATProps);
+        // Note: GAT is used for node clustering (not classification), use Panel -> Task: Node clustering
+
+        //DGI training (Deep Graph Infomax - unsupervised for node clustering)
+        SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory = new SendEdgeIndicesDGITaskFactory(applicationManager);
+        Properties sendEdgeIndicesDGIProps = new Properties();
+        sendEdgeIndicesDGIProps.setProperty("preferredMenu", "Apps.MyApp");
+        sendEdgeIndicesDGIProps.setProperty("title", "Train on DGI");
+        registerService(context, sendEdgeIndicesDGITaskFactory, org.cytoscape.work.TaskFactory.class, sendEdgeIndicesDGIProps);
+        // Note: DGI does NOT need node features - auto-generates from graph structure
+
         //SendHeteroData (Training Metapath2Vec)
         SendHeteroDataTaskFactory sendHeteroDataTaskFactory = new SendHeteroDataTaskFactory(applicationManager);
         Properties sendHeteroDataProps = new Properties();
@@ -100,6 +116,9 @@ public class CyActivator extends AbstractCyActivator {
             taskManager, 
             sendHeteroDataTaskFactory,
             sendEdgeIndexTaskFactory,
+            sendEdgeIndicesAndNodeFeatureTaskFactory,
+            sendEdgeIndicesAndNodeFeatureGATTaskFactory,
+            sendEdgeIndicesDGITaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,

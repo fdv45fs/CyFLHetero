@@ -25,6 +25,9 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
     private final TaskManager<?, ?> taskManager;
     private final SendHeteroDataTaskFactory sendHeteroDataTaskFactory;
     private final SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory;
+    private final SendEdgeIndicesAndNodeFeatureTaskFactory sendEdgeIndicesAndNodeFeatureTaskFactory; // GCN
+    private final SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory; // GAT
+    private final SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory; // DGI
     private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
@@ -64,6 +67,9 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
     public NodeEmbeddingsPanel(TaskManager<?, ?> taskManager,
                                SendHeteroDataTaskFactory sendHeteroDataTaskFactory,
                                SendEdgeIndicesTaskFactory sendEdgeIndicesTaskFactory,
+                               SendEdgeIndicesAndNodeFeatureTaskFactory sendEdgeIndicesAndNodeFeatureTaskFactory,
+                               SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory,
+                               SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory,
                                PredictLinksTaskFactory predictLinksTaskFactory,
                                CyNetworkManager cyNetworkManager,
                                ClusterNodesTaskFactory clusterNodesTaskFactory,
@@ -73,6 +79,9 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
         this.taskManager = taskManager;
         this.sendHeteroDataTaskFactory = sendHeteroDataTaskFactory;
         this.sendEdgeIndicesTaskFactory = sendEdgeIndicesTaskFactory;
+        this.sendEdgeIndicesAndNodeFeatureTaskFactory = sendEdgeIndicesAndNodeFeatureTaskFactory;
+        this.sendEdgeIndicesAndNodeFeatureGATTaskFactory = sendEdgeIndicesAndNodeFeatureGATTaskFactory;
+        this.sendEdgeIndicesDGITaskFactory = sendEdgeIndicesDGITaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
@@ -134,7 +143,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
 
         // Section Models
         modelLabel = new JLabel("Model:");
-        String[] modelOptions = {"MetaPath2Vec", "Node2Vec"};
+        String[] modelOptions = {"MetaPath2Vec", "Node2Vec", "GCN", "GAT", "DGI"};
         modelComboBox = new JComboBox<>(modelOptions);
         modelComboBox.addActionListener(new ActionListener() {
             @Override
@@ -160,8 +169,17 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
                  } else if ("Node2Vec".equals(selectedModel)) {
                      System.out.println("Train button clicked - Training Node2Vec");
                      taskIterator = sendEdgeIndicesTaskFactory.createTaskIterator();
+                 } else if ("GCN".equals(selectedModel)) {
+                     System.out.println("Train button clicked - Training GCN");
+                     taskIterator = sendEdgeIndicesAndNodeFeatureTaskFactory.createTaskIterator();
+                 } else if ("GAT".equals(selectedModel)) {
+                     System.out.println("Train button clicked - Training GAT");
+                     taskIterator = sendEdgeIndicesAndNodeFeatureGATTaskFactory.createTaskIterator();
+                 } else if ("DGI".equals(selectedModel)) {
+                     System.out.println("Train button clicked - Training DGI (Deep Graph Infomax)");
+                     taskIterator = sendEdgeIndicesDGITaskFactory.createTaskIterator();
                  } else {
-                     JOptionPane.showMessageDialog(null, "Please select a valid model (MetaPath2Vec or Node2Vec)");
+                     JOptionPane.showMessageDialog(null, "Please select a valid model");
                      return;
                  }
                  
