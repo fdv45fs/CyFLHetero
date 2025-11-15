@@ -25,8 +25,11 @@ import com.google.gson.JsonObject;
 
 public class PredictAllLinksTask extends AbstractTask {
 
+    // Server URLs for different models
+    private static final String METAPATH2VEC_URL = "http://localhost:5000/predict_all_links_metapath2vec";
+    private static final String HGAT_URL = "http://localhost:5000/predict_all_links_HGAT";
+    
     private final CyApplicationManager cyApplicationManager;
-    private final String pythonServerUrl = "http://localhost:5001/predict_all_links";
     private static final Gson gson = new Gson();
     private static final int TOP_N = 10; // Number of top links to retrieve
 
@@ -45,11 +48,34 @@ public class PredictAllLinksTask extends AbstractTask {
             return;
         }
 
-        taskMonitor.setStatusMessage("Sending request to prediction server for all links...");
+        // Determine which model to use
+        String currentModel = ModelState.getCurrentModel();
+        String pythonServerUrl;
+        
+        if ("MetaPath2Vec".equals(currentModel)) {
+            pythonServerUrl = METAPATH2VEC_URL;
+            System.out.println("[PredictAllLinks] Using MetaPath2Vec");
+        } else if ("HGAT".equals(currentModel)) {
+            pythonServerUrl = HGAT_URL;
+            System.out.println("[PredictAllLinks] Using HGAT");
+        } else {
+            taskMonitor.setStatusMessage("Predict all links not supported for model: " + currentModel);
+            showError("Predict all links is only supported for MetaPath2Vec and HGAT models.\nCurrent model: " + currentModel);
+            return;
+        }
+
+        taskMonitor.setStatusMessage("Sending request to " + currentModel + " prediction server for all links...");
 
         // Prepare JSON request body
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("top_n", TOP_N);
+        
+        // HGAT needs node type information
+        if ("HGAT".equals(currentModel)) {
+            requestBody.addProperty("source_type", "drug");
+            requestBody.addProperty("target_type", "gene");
+            System.out.println("[PredictAllLinks] HGAT: predicting drug-gene links");
+        }
 
         String responseString = null;
         int statusCode = -1;

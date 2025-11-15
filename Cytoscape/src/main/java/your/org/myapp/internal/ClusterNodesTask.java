@@ -23,8 +23,8 @@ import org.cytoscape.work.TaskMonitor;
 import java.util.Map;
 
 public class ClusterNodesTask extends AbstractTask {
-    // Server URLs for different models
-    private static final String METAPATH2VEC_SERVER_URL = "http://localhost:5001/cluster_nodes"; // MetaPath2Vec (hetero)
+    // Server URLs for different models (ALL on port 5000 after refactor)
+    private static final String METAPATH2VEC_SERVER_URL = "http://localhost:5000/cluster_nodes_metapath2vec"; // MetaPath2Vec (hetero)
     private static final String NODE2VEC_SERVER_URL = "http://localhost:5000/cluster_nodes";     // Node2Vec (homo)
     private static final String GCN_SERVER_URL = "http://localhost:5000/cluster_nodes";          // GCN (homo) - not implemented yet
     private static final String GAT_SERVER_URL = "http://localhost:5000/cluster_nodes_GAT";      // GAT (homo)
@@ -52,7 +52,7 @@ public class ClusterNodesTask extends AbstractTask {
         
         if ("MetaPath2Vec".equals(currentModel)) {
             serverUrl = METAPATH2VEC_SERVER_URL;
-            taskMonitor.setStatusMessage("Clustering nodes using MetaPath2Vec model (port 5001)...");
+            taskMonitor.setStatusMessage("Clustering nodes using MetaPath2Vec model (port 5000)...");
         } else if ("Node2Vec".equals(currentModel)) {
             serverUrl = NODE2VEC_SERVER_URL;
             taskMonitor.setStatusMessage("Clustering nodes using Node2Vec model (port 5000)...");

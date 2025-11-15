@@ -22,8 +22,8 @@ import com.google.gson.JsonObject;
 
 public class PredictLinksTask extends AbstractTask {
 
-    // Server URLs for link prediction (different models)
-    private static final String METAPATH2VEC_PREDICT_URL = "http://localhost:5001/predict_links"; // MetaPath2Vec (hetero)
+    // Server URLs for link prediction (ALL on port 5000 after refactor)
+    private static final String METAPATH2VEC_PREDICT_URL = "http://localhost:5000/predict_links_metapath2vec"; // MetaPath2Vec (hetero)
     private static final String HGAT_PREDICT_URL = "http://localhost:5000/predict_links_HGAT";    // HGAT (hetero)
     
     private final CyApplicationManager cyApplicationManager;
@@ -78,12 +78,20 @@ public class PredictLinksTask extends AbstractTask {
             return;
         }
         
-        taskMonitor.setStatusMessage("Sending request to prediction server for nodes: " + node1Name + " and " + node2Name);
+        taskMonitor.setStatusMessage("Sending request to " + currentModel + " prediction server for nodes: " + node1Name + " and " + node2Name);
 
         // Prepare JSON request body using Gson
         JsonObject requestBody = new JsonObject();
-        requestBody.addProperty("node1_name", node1Name);
-        requestBody.addProperty("node2_name", node2Name);
+        
+        // Different models expect different parameter names
+        if ("HGAT".equals(currentModel)) {
+            requestBody.addProperty("node1", node1Name);
+            requestBody.addProperty("node2", node2Name);
+        } else {
+            // MetaPath2Vec uses node1_name/node2_name
+            requestBody.addProperty("node1_name", node1Name);
+            requestBody.addProperty("node2_name", node2Name);
+        }
 
         String responseString = null;
         int statusCode = -1;

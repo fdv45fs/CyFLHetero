@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SendHeteroDataTask extends AbstractTask {
-    private static final String SERVER_URL = "http://localhost:5001/receive_hetero_data";
+    private static final String SERVER_URL = "http://localhost:5000/receive_hetero_data"; // Updated to port 5000
     private final CyApplicationManager applicationManager;
     private static final Gson gson = new Gson();
 
