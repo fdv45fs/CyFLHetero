@@ -100,8 +100,8 @@ def get_node_embeddings(model, data):
     """Lấy embedding cho tất cả các nút."""
     z_dict = {}
     with torch.no_grad():
-        for node_type in data.node_types:
-            z_dict[node_type] = model(node_type)
+    for node_type in data.node_types:
+      z_dict[node_type] = model(node_type)
     return z_dict
 
 def perform_clustering(embeddings, num_clusters=10):
@@ -196,8 +196,8 @@ def cluster_nodes():
         for node_type in node_types:
             if node_type in node_map:
                 for node_name in sorted(node_map[node_type].keys(), key=lambda n: node_map[node_type][n]):
-                    node_to_cluster[node_name] = cluster_labels[label_index].item()
-                    label_index += 1
+                node_to_cluster[node_name] = cluster_labels[label_index].item()
+                label_index += 1
 
         return jsonify({"status": "success", "node_to_cluster": node_to_cluster}), 200
 

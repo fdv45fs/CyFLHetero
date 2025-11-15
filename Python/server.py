@@ -380,14 +380,14 @@ def receive_hetero_data_HGAT():
         
         print(f"[HGAT] Starting UNSUPERVISED HGAT training...")
         
-        # Train HGAT (unsupervised)
+        # Train HGAT (unsupervised) - Quick testing with 5 epochs
         train_model_HGAT(
             edges, 
             hidden_channels=128, 
             out_channels=64, 
             num_heads=4, 
             num_layers=2,
-            num_epochs=200
+            num_epochs=5  # Changed from 200 to 5 for quick testing
         )
         
         print(f"[HGAT] Training completed successfully!")
