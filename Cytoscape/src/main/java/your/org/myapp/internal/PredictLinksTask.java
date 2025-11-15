@@ -22,8 +22,11 @@ import com.google.gson.JsonObject;
 
 public class PredictLinksTask extends AbstractTask {
 
+    // Server URLs for link prediction (different models)
+    private static final String METAPATH2VEC_PREDICT_URL = "http://localhost:5001/predict_links"; // MetaPath2Vec (hetero)
+    private static final String HGAT_PREDICT_URL = "http://localhost:5000/predict_links_HGAT";    // HGAT (hetero)
+    
     private final CyApplicationManager cyApplicationManager;
-    private final String pythonServerUrl = "http://localhost:5001/predict_links"; // Endpoint for link prediction
     private static final Gson gson = new Gson(); // Shared Gson instance
 
     public PredictLinksTask(CyApplicationManager cyApplicationManager) {
@@ -59,6 +62,22 @@ public class PredictLinksTask extends AbstractTask {
             return;
         }
 
+        // Determine server URL based on current model
+        String currentModel = ModelState.getCurrentModel();
+        String pythonServerUrl;
+        
+        if ("MetaPath2Vec".equals(currentModel)) {
+            pythonServerUrl = METAPATH2VEC_PREDICT_URL;
+            System.out.println("[PredictLinks] Using MetaPath2Vec for link prediction");
+        } else if ("HGAT".equals(currentModel)) {
+            pythonServerUrl = HGAT_PREDICT_URL;
+            System.out.println("[PredictLinks] Using HGAT for link prediction");
+        } else {
+            taskMonitor.setStatusMessage("Link prediction not supported for model: " + currentModel);
+            System.err.println("[PredictLinks] Model '" + currentModel + "' does not support link prediction");
+            return;
+        }
+        
         taskMonitor.setStatusMessage("Sending request to prediction server for nodes: " + node1Name + " and " + node2Name);
 
         // Prepare JSON request body using Gson

@@ -28,6 +28,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
     private final SendEdgeIndicesAndNodeFeatureTaskFactory sendEdgeIndicesAndNodeFeatureTaskFactory; // GCN
     private final SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory; // GAT
     private final SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory; // DGI
+    private final SendHeteroDataHGATTaskFactory sendHeteroDataHGATTaskFactory; // HGAT
     private final PredictLinksTaskFactory predictLinksTaskFactory; 
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
@@ -70,6 +71,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
                                SendEdgeIndicesAndNodeFeatureTaskFactory sendEdgeIndicesAndNodeFeatureTaskFactory,
                                SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory,
                                SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory,
+                               SendHeteroDataHGATTaskFactory sendHeteroDataHGATTaskFactory,
                                PredictLinksTaskFactory predictLinksTaskFactory,
                                CyNetworkManager cyNetworkManager,
                                ClusterNodesTaskFactory clusterNodesTaskFactory,
@@ -82,6 +84,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
         this.sendEdgeIndicesAndNodeFeatureTaskFactory = sendEdgeIndicesAndNodeFeatureTaskFactory;
         this.sendEdgeIndicesAndNodeFeatureGATTaskFactory = sendEdgeIndicesAndNodeFeatureGATTaskFactory;
         this.sendEdgeIndicesDGITaskFactory = sendEdgeIndicesDGITaskFactory;
+        this.sendHeteroDataHGATTaskFactory = sendHeteroDataHGATTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
@@ -143,7 +146,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
 
         // Section Models
         modelLabel = new JLabel("Model:");
-        String[] modelOptions = {"MetaPath2Vec", "Node2Vec", "GCN", "GAT", "DGI"};
+        String[] modelOptions = {"MetaPath2Vec", "Node2Vec", "GCN", "GAT", "DGI", "HGAT"};
         modelComboBox = new JComboBox<>(modelOptions);
         modelComboBox.addActionListener(new ActionListener() {
             @Override
@@ -178,6 +181,9 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
                  } else if ("DGI".equals(selectedModel)) {
                      System.out.println("Train button clicked - Training DGI (Deep Graph Infomax)");
                      taskIterator = sendEdgeIndicesDGITaskFactory.createTaskIterator();
+                 } else if ("HGAT".equals(selectedModel)) {
+                     System.out.println("Train button clicked - Training HGAT (Heterogeneous GAT)");
+                     taskIterator = sendHeteroDataHGATTaskFactory.createTaskIterator();
                  } else {
                      JOptionPane.showMessageDialog(null, "Please select a valid model");
                      return;
