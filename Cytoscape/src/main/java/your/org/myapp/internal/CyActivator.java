@@ -81,6 +81,14 @@ public class CyActivator extends AbstractCyActivator {
         registerService(context, sendEdgeIndicesDGITaskFactory, org.cytoscape.work.TaskFactory.class, sendEdgeIndicesDGIProps);
         // Note: DGI does NOT need node features - auto-generates from graph structure
 
+        //HGAT training (Heterogeneous GAT - for Drug-Gene networks)
+        SendHeteroDataHGATTaskFactory sendHeteroDataHGATTaskFactory = new SendHeteroDataHGATTaskFactory(applicationManager);
+        Properties sendHeteroDataHGATProps = new Properties();
+        sendHeteroDataHGATProps.setProperty("preferredMenu", "Apps.MyApp");
+        sendHeteroDataHGATProps.setProperty("title", "Train on HGAT");
+        registerService(context, sendHeteroDataHGATTaskFactory, org.cytoscape.work.TaskFactory.class, sendHeteroDataHGATProps);
+        // Note: HGAT is for heterogeneous graphs (e.g., Drug-Gene), supports clustering + link prediction
+
         //SendHeteroData (Training Metapath2Vec)
         SendHeteroDataTaskFactory sendHeteroDataTaskFactory = new SendHeteroDataTaskFactory(applicationManager);
         Properties sendHeteroDataProps = new Properties();
@@ -119,6 +127,7 @@ public class CyActivator extends AbstractCyActivator {
             sendEdgeIndicesAndNodeFeatureTaskFactory,
             sendEdgeIndicesAndNodeFeatureGATTaskFactory,
             sendEdgeIndicesDGITaskFactory,
+            sendHeteroDataHGATTaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,

@@ -29,6 +29,7 @@ public class ClusterNodesTask extends AbstractTask {
     private static final String GCN_SERVER_URL = "http://localhost:5000/cluster_nodes";          // GCN (homo) - not implemented yet
     private static final String GAT_SERVER_URL = "http://localhost:5000/cluster_nodes_GAT";      // GAT (homo)
     private static final String DGI_SERVER_URL = "http://localhost:5000/cluster_nodes_DGI";      // DGI (homo)
+    private static final String HGAT_SERVER_URL = "http://localhost:5000/cluster_nodes_HGAT";    // HGAT (hetero)
     
     private final CyApplicationManager applicationManager;
     private static final Gson gson = new Gson();
@@ -65,6 +66,9 @@ public class ClusterNodesTask extends AbstractTask {
         } else if ("DGI".equals(currentModel)) {
             serverUrl = DGI_SERVER_URL;
             taskMonitor.setStatusMessage("Clustering nodes using DGI model (port 5000)...");
+        } else if ("HGAT".equals(currentModel)) {
+            serverUrl = HGAT_SERVER_URL;
+            taskMonitor.setStatusMessage("Clustering nodes using HGAT model (port 5000)...");
         } else {
             taskMonitor.setStatusMessage("Unknown model selected: " + currentModel);
             return;
