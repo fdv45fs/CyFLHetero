@@ -25,6 +25,7 @@ public class PredictLinksTask extends AbstractTask {
     // Server URLs for link prediction (ALL on port 5000 after refactor)
     private static final String METAPATH2VEC_PREDICT_URL = "http://localhost:5000/predict_links_metapath2vec"; // MetaPath2Vec (hetero)
     private static final String HGAT_PREDICT_URL = "http://localhost:5000/predict_links_HGAT";    // HGAT (hetero)
+    private static final String GTN_PREDICT_URL = "http://localhost:5000/predict_links_GTN";      // GTN (hetero)
     
     private final CyApplicationManager cyApplicationManager;
     private static final Gson gson = new Gson(); // Shared Gson instance
@@ -72,6 +73,9 @@ public class PredictLinksTask extends AbstractTask {
         } else if ("HGAT".equals(currentModel)) {
             pythonServerUrl = HGAT_PREDICT_URL;
             System.out.println("[PredictLinks] Using HGAT for link prediction");
+        } else if ("GTN".equals(currentModel)) {
+            pythonServerUrl = GTN_PREDICT_URL;
+            System.out.println("[PredictLinks] Using GTN for link prediction");
         } else {
             taskMonitor.setStatusMessage("Link prediction not supported for model: " + currentModel);
             System.err.println("[PredictLinks] Model '" + currentModel + "' does not support link prediction");
@@ -84,7 +88,8 @@ public class PredictLinksTask extends AbstractTask {
         JsonObject requestBody = new JsonObject();
         
         // Different models expect different parameter names
-        if ("HGAT".equals(currentModel)) {
+        if ("HGAT".equals(currentModel) || "GTN".equals(currentModel)) {
+            // HGAT and GTN use node1/node2
             requestBody.addProperty("node1", node1Name);
             requestBody.addProperty("node2", node2Name);
         } else {

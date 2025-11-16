@@ -89,6 +89,14 @@ public class CyActivator extends AbstractCyActivator {
         registerService(context, sendHeteroDataHGATTaskFactory, org.cytoscape.work.TaskFactory.class, sendHeteroDataHGATProps);
         // Note: HGAT is for heterogeneous graphs (e.g., Drug-Gene), supports clustering + link prediction
 
+        //GTN training (Graph Transformer Network - for Drug-Gene networks with auto meta-path learning)
+        SendHeteroDataGTNTaskFactory sendHeteroDataGTNTaskFactory = new SendHeteroDataGTNTaskFactory(applicationManager);
+        Properties sendHeteroDataGTNProps = new Properties();
+        sendHeteroDataGTNProps.setProperty("preferredMenu", "Apps.MyApp");
+        sendHeteroDataGTNProps.setProperty("title", "Train on GTN");
+        registerService(context, sendHeteroDataGTNTaskFactory, org.cytoscape.work.TaskFactory.class, sendHeteroDataGTNProps);
+        // Note: GTN automatically learns meta-paths, supports clustering + link prediction
+
         //SendHeteroData (Training Metapath2Vec)
         SendHeteroDataTaskFactory sendHeteroDataTaskFactory = new SendHeteroDataTaskFactory(applicationManager);
         Properties sendHeteroDataProps = new Properties();
@@ -128,6 +136,7 @@ public class CyActivator extends AbstractCyActivator {
             sendEdgeIndicesAndNodeFeatureGATTaskFactory,
             sendEdgeIndicesDGITaskFactory,
             sendHeteroDataHGATTaskFactory,
+            sendHeteroDataGTNTaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,

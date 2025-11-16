@@ -6,6 +6,7 @@ from predict_GCN import predict_node_label_GCN
 from train_GAT_unsupervised import train_model_GAT_unsupervised  # Unsupervised for clustering
 from train_DGI import train_model_DGI  # Deep Graph Infomax - Unsupervised
 from train_HGAT import train_model_HGAT, get_embeddings as get_embeddings_HGAT  # Heterogeneous GAT
+from train_GTN import train_model_GTN, get_embeddings_GTN  # Graph Transformer Network
 
 # MetaPath2Vec imports (merged from serverDetero.py)
 import torch
@@ -957,6 +958,308 @@ def predict_all_links_HGAT():
         return jsonify({
             "status": "error",
             "message": f"Error during HGAT all links prediction: {str(e)}"
+        }), 500
+
+
+# ============================================================
+# GTN (Graph Transformer Network) ENDPOINTS
+# ============================================================
+
+@app.route('/receive_hetero_data_GTN', methods=['POST'])
+def receive_hetero_data_GTN():
+    """Train GTN model on heterogeneous graph data"""
+    import pickle
+    
+    try:
+        data = request.get_json()
+        edges = data.get('edges', [])
+        node_types = data.get('node_types', {})
+        
+        if not edges:
+            return jsonify({
+                "status": "error",
+                "message": "No edges provided"
+            }), 400
+        
+        if not node_types:
+            return jsonify({
+                "status": "error",
+                "message": "No node types provided"
+            }), 400
+        
+        print(f"\n[GTN] Received heterogeneous graph data:")
+        print(f"  - Edges: {len(edges)}")
+        print(f"  - Nodes: {len(node_types)}")
+        print(f"  - Node types: {set(node_types.values())}")
+        
+        # Convert edges to tuples
+        edges = [(e[0], e[1]) for e in edges]
+        
+        # Train GTN model
+        print("[GTN] Starting GTN training...")
+        embeddings, node_map = train_model_GTN(
+            edges=edges,
+            node_types=node_types,
+            feature_dim=64,
+            hidden_dim=128,
+            out_dim=64,
+            num_epochs=5,  # Quick training for testing
+            lr=0.005
+        )
+        
+        print("[GTN] Training completed successfully!")
+        
+        return jsonify({
+            "status": "success",
+            "message": "GTN model trained successfully",
+            "num_edges": len(edges),
+            "num_nodes": {ntype: len(mapping) for ntype, mapping in node_map.items()},
+            "node_types": list(node_map.keys())
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        print(f"[GTN] ERROR during training: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({
+            "status": "error",
+            "message": f"Error during GTN training: {str(e)}"
+        }), 500
+
+
+@app.route('/cluster_nodes_GTN', methods=['POST'])
+def cluster_nodes_GTN():
+    """Perform K-means clustering on GTN embeddings"""
+    import pickle
+    from sklearn.cluster import KMeans
+    
+    try:
+        data = request.get_json()
+        num_clusters = data.get('num_clusters', 3)
+        
+        print(f"\n[GTN Clustering] Clustering with k={num_clusters}")
+        
+        # Load embeddings
+        try:
+            with open("GTN_embeddings.pkl", "rb") as f:
+                saved_data = pickle.load(f)
+                embeddings_dict = saved_data["embeddings"]
+                node_mapping = saved_data["node_mapping"]
+        except FileNotFoundError:
+            return jsonify({
+                "status": "error",
+                "message": "Model not trained. Please train GTN first."
+            }), 400
+        
+        # Combine all embeddings for clustering
+        all_embeddings = []
+        node_names = []
+        node_types_list = []
+        
+        for node_type, embeddings in embeddings_dict.items():
+            all_embeddings.append(embeddings)
+            # Get node names in order
+            mapping = node_mapping[node_type]
+            sorted_nodes = sorted(mapping.items(), key=lambda x: x[1])
+            node_names.extend([name for name, _ in sorted_nodes])
+            node_types_list.extend([node_type] * len(mapping))
+        
+        import numpy as np
+        all_embeddings = np.vstack(all_embeddings)
+        
+        print(f"[GTN Clustering] Total nodes: {len(node_names)}")
+        print(f"[GTN Clustering] Embedding shape: {all_embeddings.shape}")
+        
+        # Perform K-means clustering
+        kmeans = KMeans(n_clusters=num_clusters, random_state=42, n_init=10)
+        cluster_labels = kmeans.fit_predict(all_embeddings)
+        
+        # Create result dictionary (use node_to_cluster for consistency with other models)
+        node_to_cluster = {}
+        for node_name, cluster_id in zip(node_names, cluster_labels):
+            node_to_cluster[node_name] = int(cluster_id)
+        
+        # Count clusters
+        cluster_counts = {}
+        for cluster_id in range(num_clusters):
+            cluster_counts[f"cluster_{cluster_id}"] = int((cluster_labels == cluster_id).sum())
+        
+        print(f"[GTN Clustering] Cluster distribution: {cluster_counts}")
+        print(f"[GTN Clustering] Successfully clustered {len(node_names)} nodes")
+        
+        return jsonify({
+            "status": "success",
+            "node_to_cluster": node_to_cluster
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        print(f"[GTN Clustering] ERROR: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({
+            "status": "error",
+            "message": f"Error during GTN clustering: {str(e)}"
+        }), 500
+
+
+@app.route('/predict_links_GTN', methods=['POST'])
+def predict_links_GTN():
+    """Predict link scores for heterogeneous graphs using GTN embeddings"""
+    import pickle
+    import numpy as np
+    
+    try:
+        data = request.get_json()
+        
+        # Get nodes to predict link between
+        node1 = data.get('node1')
+        node2 = data.get('node2')
+        
+        if not node1 or not node2:
+            return jsonify({
+                "status": "error",
+                "message": "Both node1 and node2 must be provided"
+            }), 400
+        
+        print(f"[GTN Link Prediction] Predicting link between '{node1}' and '{node2}'")
+        
+        # Load embeddings
+        try:
+            with open("GTN_embeddings.pkl", "rb") as f:
+                saved_data = pickle.load(f)
+                embeddings_dict = saved_data["embeddings"]
+                node_mapping = saved_data["node_mapping"]
+        except FileNotFoundError:
+            return jsonify({
+                "status": "error",
+                "message": "Model not trained. Please train GTN first."
+            }), 400
+        
+        # Find which type each node belongs to
+        node1_type = None
+        node1_idx = None
+        node2_type = None
+        node2_idx = None
+        
+        for node_type, mapping in node_mapping.items():
+            if node1 in mapping:
+                node1_type = node_type
+                node1_idx = mapping[node1]
+            if node2 in mapping:
+                node2_type = node_type
+                node2_idx = mapping[node2]
+        
+        if node1_type is None or node2_type is None:
+            return jsonify({
+                "status": "error",
+                "message": f"Node(s) not found in trained model"
+            }), 400
+        
+        # Get embeddings
+        node1_emb = embeddings_dict[node1_type][node1_idx]
+        node2_emb = embeddings_dict[node2_type][node2_idx]
+        
+        # Compute similarity score (dot product)
+        score = float(np.dot(node1_emb, node2_emb))
+        
+        print(f"[GTN Link Prediction] Score: {score:.6f}")
+        print(f"  - {node1} (type={node1_type})")
+        print(f"  - {node2} (type={node2_type})")
+        
+        return jsonify({
+            "status": "success",
+            "node1": node1,
+            "node2": node2,
+            "node1_type": node1_type,
+            "node2_type": node2_type,
+            "score": score
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        print(f"[GTN Link Prediction] ERROR: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({
+            "status": "error",
+            "message": f"Error during GTN link prediction: {str(e)}"
+        }), 500
+
+
+@app.route('/predict_all_links_GTN', methods=['POST'])
+def predict_all_links_GTN():
+    """Predict all possible links and return top N for heterogeneous graphs"""
+    import pickle
+    import numpy as np
+    
+    try:
+        data = request.get_json()
+        top_n = data.get('top_n', 10)
+        source_type = data.get('source_type', 'drug')
+        target_type = data.get('target_type', 'gene')
+        
+        print(f"[GTN All Links] Predicting top {top_n} {source_type}-{target_type} links")
+        
+        # Load embeddings
+        try:
+            with open("GTN_embeddings.pkl", "rb") as f:
+                saved_data = pickle.load(f)
+                embeddings_dict = saved_data["embeddings"]
+                node_mapping = saved_data["node_mapping"]
+        except FileNotFoundError:
+            return jsonify({
+                "status": "error",
+                "message": "Model not trained. Please train GTN first."
+            }), 400
+        
+        # Get embeddings for source and target types
+        if source_type not in embeddings_dict or target_type not in embeddings_dict:
+            return jsonify({
+                "status": "error",
+                "message": f"Node types '{source_type}' or '{target_type}' not found"
+            }), 400
+        
+        source_emb = embeddings_dict[source_type]
+        target_emb = embeddings_dict[target_type]
+        source_nodes = list(node_mapping[source_type].keys())
+        target_nodes = list(node_mapping[target_type].keys())
+        
+        print(f"[GTN All Links] {len(source_nodes)} {source_type} nodes x {len(target_nodes)} {target_type} nodes")
+        
+        # Compute all pairwise scores (vectorized)
+        scores_matrix = np.dot(source_emb, target_emb.T)
+        
+        # Get top N links
+        flat_indices = np.argsort(scores_matrix.flatten())[::-1][:top_n]
+        top_links = []
+        
+        for idx in flat_indices:
+            source_idx = idx // len(target_nodes)
+            target_idx = idx % len(target_nodes)
+            score = scores_matrix[source_idx, target_idx]
+            
+            top_links.append({
+                'node1': source_nodes[source_idx],
+                'node2': target_nodes[target_idx],
+                'node1_type': source_type,
+                'node2_type': target_type,
+                'score': float(score)
+            })
+        
+        print(f"[GTN All Links] Successfully predicted top {len(top_links)} links")
+        
+        return jsonify({
+            "status": "success",
+            "top_links": top_links,
+            "total_links": len(source_nodes) * len(target_nodes)
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        print(f"[GTN All Links] ERROR: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({
+            "status": "error",
+            "message": f"Error during GTN all links prediction: {str(e)}"
         }), 500
 
 

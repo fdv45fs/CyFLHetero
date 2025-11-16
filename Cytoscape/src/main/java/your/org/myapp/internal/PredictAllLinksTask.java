@@ -28,6 +28,7 @@ public class PredictAllLinksTask extends AbstractTask {
     // Server URLs for different models
     private static final String METAPATH2VEC_URL = "http://localhost:5000/predict_all_links_metapath2vec";
     private static final String HGAT_URL = "http://localhost:5000/predict_all_links_HGAT";
+    private static final String GTN_URL = "http://localhost:5000/predict_all_links_GTN";
     
     private final CyApplicationManager cyApplicationManager;
     private static final Gson gson = new Gson();
@@ -58,9 +59,12 @@ public class PredictAllLinksTask extends AbstractTask {
         } else if ("HGAT".equals(currentModel)) {
             pythonServerUrl = HGAT_URL;
             System.out.println("[PredictAllLinks] Using HGAT");
+        } else if ("GTN".equals(currentModel)) {
+            pythonServerUrl = GTN_URL;
+            System.out.println("[PredictAllLinks] Using GTN");
         } else {
             taskMonitor.setStatusMessage("Predict all links not supported for model: " + currentModel);
-            showError("Predict all links is only supported for MetaPath2Vec and HGAT models.\nCurrent model: " + currentModel);
+            showError("Predict all links is only supported for MetaPath2Vec, HGAT, and GTN models.\nCurrent model: " + currentModel);
             return;
         }
 
@@ -70,11 +74,15 @@ public class PredictAllLinksTask extends AbstractTask {
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("top_n", TOP_N);
         
-        // HGAT needs node type information
+        // HGAT and GTN need node type information
         if ("HGAT".equals(currentModel)) {
             requestBody.addProperty("source_type", "drug");
             requestBody.addProperty("target_type", "gene");
             System.out.println("[PredictAllLinks] HGAT: predicting drug-gene links");
+        } else if ("GTN".equals(currentModel)) {
+            requestBody.addProperty("source_type", "drug");
+            requestBody.addProperty("target_type", "gene");
+            System.out.println("[PredictAllLinks] GTN: predicting drug-gene links");
         }
 
         String responseString = null;
