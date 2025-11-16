@@ -7,24 +7,39 @@
 ### ❌ KHÔNG cần:
 - ❌ `Label` attribute (không cần nhãn)
 - ❌ `Split` attribute (không cần train/test split)
+- ❌ `Features` attribute (tự động generate nếu không có!)
 
 ### ✅ CHỈ cần:
-- ✅ `Features` attribute (vector đặc trưng của node)
 - ✅ Edge connections (cấu trúc đồ thị)
+- ✅ [Optional] `Features` attribute (nếu không có sẽ auto-generate với Xavier init)
 
 ---
 
 ## 🎯 Workflow
 
 ```
-1. Node Features (unsupervised)
+1. Load Graph (Homo or Hetero)
    ↓
-2. GAT learns embeddings (reconstruction loss)
+2. Auto-generate Features (if not provided - Xavier init 64-dim)
    ↓
-3. KMeans clustering on embeddings
+3. GAT learns embeddings (reconstruction loss + attention)
    ↓
-4. Cluster assignments
+4. KMeans clustering on embeddings
+   ↓
+5. Cluster assignments → Color nodes
 ```
+
+## 📊 Use Cases
+
+✅ **Homogeneous Graphs** (e.g., ChCh-Miner_durgbank-chem-chem.tsv)
+- Drug-drug interaction networks
+- Auto-generates features (Xavier initialization)
+- Clusters similar drugs
+
+✅ **Heterogeneous Graphs** (if you provide Features)
+- Networks with node features
+- Uses your custom features
+- More accurate clustering
 
 ---
 

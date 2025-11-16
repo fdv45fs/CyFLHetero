@@ -39,8 +39,8 @@ public class SendEdgeIndicesAndNodeFeatureGATTask extends AbstractTask {
             return;
         }
 
-        taskMonitor.setStatusMessage("Collecting edges and node features for UNSUPERVISED GAT clustering...");
-        System.out.println("[GAT Unsupervised] Starting data collection for clustering");
+        taskMonitor.setStatusMessage("Collecting edges for UNSUPERVISED GAT clustering (auto-generates features if needed)...");
+        System.out.println("[GAT Unsupervised] Starting data collection for clustering (no features required)");
 
         // Extract edge indices
         Collection<CyEdge> edges = currentNetwork.getEdgeList();
@@ -67,17 +67,20 @@ public class SendEdgeIndicesAndNodeFeatureGATTask extends AbstractTask {
             String nodeName = row.get("name", String.class);
             nodeObject.addProperty("name", nodeName);
 
-            // For UNSUPERVISED GAT clustering, we only need 'Features' attribute
-            // No need for 'Label' or 'Split' (supervised learning attributes)
+            // For UNSUPERVISED GAT clustering:
+            // - If 'Features' column exists → use it
+            // - If not → send empty, Python will auto-generate
             JsonObject featuresObject = new JsonObject();
             
-            // Look for 'Features' column specifically
-            Object featuresValue = row.get("Features", Object.class);
-            if (featuresValue != null) {
-                featuresObject.addProperty("Features", featuresValue.toString());
-            } else {
-                System.err.println("[GAT] Warning: Node '" + nodeName + "' has no 'Features' attribute");
+            // Check if 'Features' column exists
+            CyColumn featuresColumn = nodeTable.getColumn("Features");
+            if (featuresColumn != null) {
+                Object featuresValue = row.get("Features", Object.class);
+                if (featuresValue != null) {
+                    featuresObject.addProperty("Features", featuresValue.toString());
+                }
             }
+            // If no Features column or value, featuresObject remains empty (Python will auto-generate)
 
             nodeObject.add("features", featuresObject);
             nodeFeatureArray.add(nodeObject);
