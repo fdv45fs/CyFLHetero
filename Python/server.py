@@ -723,7 +723,7 @@ def receive_hetero_data_HGAT():
             out_channels=64, 
             num_heads=4, 
             num_layers=2,
-            num_epochs=5  # Changed from 200 to 5 for quick testing
+            num_epochs=200
         )
         
         print(f"[HGAT] Training completed successfully!")
