@@ -511,25 +511,25 @@ def receive_edge_indices_and_features_GAT():
             return jsonify({"status": "error", "message": "No node features provided"}), 400
         print(f"[GAT Unsupervised] Number of nodes: {len(nodes)}")
 
-        # For UNSUPERVISED learning, we only need 'Features' attribute
-        # No need for 'Label' or 'Split'!
+        # For UNSUPERVISED learning:
+        # - If 'Features' attribute exists → use it
+        # - If not → train_GAT_unsupervised will auto-generate random features
         features = []
-        missing_features = []
+        has_features = False
 
         for node in nodes:
-            node_name = node.get("name")
             node_feats = node.get("features", {})
-
-            # Check if 'Features' exists
-            if 'Features' not in node_feats:
-                missing_features.append(node_name)
+            
+            # Check if this node has Features
+            if 'Features' in node_feats and node_feats['Features']:
+                has_features = True
             
             features.append(node_feats)
         
-        if missing_features:
-            error_msg = f"Missing 'Features' attribute for {len(missing_features)} nodes. First 5: {missing_features[:5]}"
-            print(f"[GAT Unsupervised] ERROR: {error_msg}")
-            return jsonify({"status": "error", "message": error_msg}), 400
+        if has_features:
+            print(f"[GAT Unsupervised] Using provided node features")
+        else:
+            print(f"[GAT Unsupervised] No features provided - will auto-generate random features")
 
         print(f"[GAT Unsupervised] Starting UNSUPERVISED training for clustering...")
         

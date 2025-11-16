@@ -70,17 +70,35 @@ def train_model_GAT_unsupervised(edges, node_features, num_epochs=50, hidden_dim
 
     # Convert node features to tensor
     features_tensor = []
+    has_real_features = False
+    
+    # First pass: check if any node has features
     for node in node_features:
         node_feats = node.get('Features', '')
-        if node_feats:  # Only if features exist
-            feature_values = list(map(float, node_feats.split()))
-            features_tensor.append(feature_values)
-        else:
-            # If no features, create random features
-            print(f"Warning: Node has no 'Features' attribute, using random features")
-            features_tensor.append([0.0] * 128)  # Default dimension
+        if node_feats:
+            has_real_features = True
+            break
     
-    node_features_tensor = torch.tensor(features_tensor, dtype=torch.float)
+    if has_real_features:
+        print("[GAT] Using provided node features")
+        for node in node_features:
+            node_feats = node.get('Features', '')
+            if node_feats:
+                feature_values = list(map(float, node_feats.split()))
+                features_tensor.append(feature_values)
+            else:
+                # If some nodes missing features, use zeros
+                features_tensor.append([0.0] * 128)
+        node_features_tensor = torch.tensor(features_tensor, dtype=torch.float)
+    else:
+        # No features provided - auto-generate with Xavier initialization
+        print("[GAT] No features provided - auto-generating with Xavier initialization")
+        feature_dim = 64  # Default feature dimension
+        num_nodes = len(node_features)
+        node_features_tensor = torch.randn(num_nodes, feature_dim)
+        # Xavier/Glorot initialization
+        torch.nn.init.xavier_uniform_(node_features_tensor)
+    
     print(f"Feature dimension: {node_features_tensor.size(1)}")
 
     # Create PyTorch Geometric Data object (no labels needed!)
