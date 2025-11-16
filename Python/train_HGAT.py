@@ -245,10 +245,12 @@ def train_model_HGAT(edges, hidden_channels=128, out_channels=64, num_heads=4, n
     # Create HeteroData
     data, node_map = create_hetero_data(edges, node_types)
     
-    # Check device (temporarily use CPU to avoid CUDA issues)
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cpu')  # Force CPU for stability
+    # Check device (auto-detect GPU if available)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"[HGAT] Using device: {device}")
+    if device.type == 'cuda':
+        print(f"[HGAT] GPU detected: {torch.cuda.get_device_name(0)}")
+        print(f"[HGAT] CUDA version: {torch.version.cuda}")
     
     # Validate edge indices before moving to device
     print(f"[HGAT] Validating edge indices...")
