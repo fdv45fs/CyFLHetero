@@ -19,6 +19,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
     private final SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory;
     private final SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory;
     private final SendHeteroDataHGATTaskFactory sendHeteroDataHGATTaskFactory;
+    private final SendHeteroDataGTNTaskFactory sendHeteroDataGTNTaskFactory;
     private final PredictLinksTaskFactory predictLinksTaskFactory;
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
@@ -36,6 +37,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
                                 SendEdgeIndicesAndNodeFeatureGATTaskFactory sendEdgeIndicesAndNodeFeatureGATTaskFactory,
                                 SendEdgeIndicesDGITaskFactory sendEdgeIndicesDGITaskFactory,
                                 SendHeteroDataHGATTaskFactory sendHeteroDataHGATTaskFactory,
+                                SendHeteroDataGTNTaskFactory sendHeteroDataGTNTaskFactory,
                                 PredictLinksTaskFactory predictLinksTaskFactory,
                                 CyNetworkManager cyNetworkManager,
                                 ClusterNodesTaskFactory clusterNodesTaskFactory,
@@ -52,6 +54,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
         this.sendEdgeIndicesAndNodeFeatureGATTaskFactory = sendEdgeIndicesAndNodeFeatureGATTaskFactory;
         this.sendEdgeIndicesDGITaskFactory = sendEdgeIndicesDGITaskFactory;
         this.sendHeteroDataHGATTaskFactory = sendHeteroDataHGATTaskFactory;
+        this.sendHeteroDataGTNTaskFactory = sendHeteroDataGTNTaskFactory;
         this.predictLinksTaskFactory = predictLinksTaskFactory;
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
@@ -73,6 +76,7 @@ public class ShowPanelTaskFactory extends AbstractTaskFactory {
             sendEdgeIndicesAndNodeFeatureGATTaskFactory,
             sendEdgeIndicesDGITaskFactory,
             sendHeteroDataHGATTaskFactory,
+            sendHeteroDataGTNTaskFactory,
             predictLinksTaskFactory,
             cyNetworkManager,
             clusterNodesTaskFactory,
