@@ -1263,5 +1263,214 @@ def predict_all_links_GTN():
         }), 500
 
 
+# ============================================================
+# Node Classification with SVM (Node2Vec + Labels)
+# ============================================================
+
+@app.route('/train_svm_classifier', methods=['POST'])
+def train_svm_classifier():
+    """
+    Train SVM classifier on Node2Vec embeddings for binary disease classification.
+    
+    Expected JSON:
+    {
+        "node_names": ["7157", "2475", ...],
+        "labels": [1, 0, 1, ...]  # Binary: 1 = has disease, 0 = no disease
+    }
+    
+    Returns:
+    {
+        "status": "success",
+        "metrics": {
+            "accuracy": 0.823,
+            "f1_score": 0.805,
+            "precision": 0.791,
+            "recall": 0.820,
+            "roc_auc": 0.887
+        },
+        "train_size": 1234,
+        "test_size": 411,
+        "has_disease_count": 245,
+        "no_disease_count": 989
+    }
+    """
+    try:
+        import pickle
+        from sklearn.svm import SVC
+        from sklearn.model_selection import train_test_split, GridSearchCV
+        from sklearn.metrics import (accuracy_score, precision_score, recall_score, 
+                                     f1_score, roc_auc_score, confusion_matrix, 
+                                     classification_report)
+        import numpy as np
+        
+        print("[SVM Classifier] Received training request")
+        
+        data = request.get_json()
+        node_names = data.get('node_names', [])
+        labels = data.get('labels', [])
+        
+        if not node_names or not labels:
+            return jsonify({
+                "status": "error",
+                "message": "Missing node_names or labels"
+            }), 400
+        
+        if len(node_names) != len(labels):
+            return jsonify({
+                "status": "error",
+                "message": f"Mismatch: {len(node_names)} nodes but {len(labels)} labels"
+            }), 400
+        
+        print(f"[SVM Classifier] Received {len(node_names)} nodes with labels")
+        
+        # Load Node2Vec embeddings
+        try:
+            with open("Node2Vec_embeddings.pkl", "rb") as f:
+                embedding_data = pickle.load(f)
+                embeddings = embedding_data["embeddings"]
+                node_mapping = embedding_data["node_mapping"]
+            print(f"[SVM Classifier] Loaded embeddings for {len(node_mapping)} nodes")
+        except FileNotFoundError:
+            return jsonify({
+                "status": "error",
+                "message": "Node2Vec embeddings not found. Please train Node2Vec first."
+            }), 400
+        
+        # Match nodes with embeddings
+        X = []
+        y = []
+        matched_nodes = []
+        skipped_count = 0
+        
+        for node_name, label in zip(node_names, labels):
+            if node_name in node_mapping:
+                node_idx = node_mapping[node_name]
+                X.append(embeddings[node_idx])
+                y.append(label)
+                matched_nodes.append(node_name)
+            else:
+                skipped_count += 1
+        
+        if skipped_count > 0:
+            print(f"[SVM Classifier] Warning: {skipped_count} nodes not found in embeddings (skipped)")
+        
+        if len(X) == 0:
+            return jsonify({
+                "status": "error",
+                "message": "No nodes matched with embeddings. Check node names."
+            }), 400
+        
+        X = np.array(X)
+        y = np.array(y)
+        
+        print(f"[SVM Classifier] Matched {len(X)} nodes")
+        print(f"[SVM Classifier] Label distribution: {np.sum(y == 1)} has disease, {np.sum(y == 0)} no disease")
+        
+        # Check if we have both classes
+        unique_labels = np.unique(y)
+        if len(unique_labels) < 2:
+            return jsonify({
+                "status": "error",
+                "message": f"Need both classes (0 and 1) for training. Only found: {unique_labels.tolist()}"
+            }), 400
+        
+        # Stratified train/test split (80/20)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+        
+        print(f"[SVM Classifier] Train set: {len(X_train)} samples")
+        print(f"[SVM Classifier] Test set: {len(X_test)} samples")
+        
+        # GridSearchCV for SVM hyperparameter tuning
+        print("[SVM Classifier] Starting GridSearchCV...")
+        param_grid = {
+            'C': [0.1, 1, 10, 100],
+            'gamma': ['scale', 'auto', 0.001, 0.01, 0.1],
+            'kernel': ['rbf']
+        }
+        
+        svm = SVC(probability=True, random_state=42)
+        grid_search = GridSearchCV(
+            svm, param_grid, cv=5, scoring='f1', n_jobs=-1, verbose=0
+        )
+        grid_search.fit(X_train, y_train)
+        
+        best_model = grid_search.best_estimator_
+        print(f"[SVM Classifier] Best parameters: {grid_search.best_params_}")
+        print(f"[SVM Classifier] Best CV F1-score: {grid_search.best_score_:.4f}")
+        
+        # Evaluate on test set
+        y_pred = best_model.predict(X_test)
+        y_pred_proba = best_model.predict_proba(X_test)[:, 1]
+        
+        # Calculate metrics
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, zero_division=0)
+        recall = recall_score(y_test, y_pred, zero_division=0)
+        f1 = f1_score(y_test, y_pred, zero_division=0)
+        roc_auc = roc_auc_score(y_test, y_pred_proba)
+        
+        # Confusion matrix
+        cm = confusion_matrix(y_test, y_pred)
+        tn, fp, fn, tp = cm.ravel()
+        
+        print(f"[SVM Classifier] Test Accuracy: {accuracy:.4f}")
+        print(f"[SVM Classifier] Test F1-Score: {f1:.4f}")
+        print(f"[SVM Classifier] Test ROC-AUC: {roc_auc:.4f}")
+        print(f"[SVM Classifier] Confusion Matrix: TN={tn}, FP={fp}, FN={fn}, TP={tp}")
+        
+        # Save the trained model
+        model_path = "svm_disease_classifier.pkl"
+        with open(model_path, "wb") as f:
+            pickle.dump({
+                "model": best_model,
+                "node_mapping": node_mapping,
+                "best_params": grid_search.best_params_,
+                "feature_names": matched_nodes[:10]  # Sample for reference
+            }, f)
+        print(f"[SVM Classifier] Model saved to {model_path}")
+        
+        # Classification report
+        class_report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
+        
+        return jsonify({
+            "status": "success",
+            "message": "SVM classifier trained successfully",
+            "metrics": {
+                "accuracy": float(accuracy),
+                "precision": float(precision),
+                "recall": float(recall),
+                "f1_score": float(f1),
+                "roc_auc": float(roc_auc)
+            },
+            "confusion_matrix": {
+                "true_negative": int(tn),
+                "false_positive": int(fp),
+                "false_negative": int(fn),
+                "true_positive": int(tp)
+            },
+            "dataset": {
+                "total_nodes": len(X),
+                "train_size": len(X_train),
+                "test_size": len(X_test),
+                "has_disease_count": int(np.sum(y == 1)),
+                "no_disease_count": int(np.sum(y == 0)),
+                "skipped_nodes": skipped_count
+            },
+            "best_params": grid_search.best_params_,
+            "best_cv_f1": float(grid_search.best_score_)
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        print(f"[SVM Classifier] ERROR: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({
+            "status": "error",
+            "message": f"Error during SVM training: {str(e)}"
+        }), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)

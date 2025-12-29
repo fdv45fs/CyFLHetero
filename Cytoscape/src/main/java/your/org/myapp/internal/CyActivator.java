@@ -125,6 +125,14 @@ public class CyActivator extends AbstractCyActivator {
         predictAllLinksProps.setProperty("title", "Predict All Links (Top 10)");
         registerService(context, predictAllLinksTaskFactory, org.cytoscape.work.TaskFactory.class, predictAllLinksProps);
 
+        //SVM Classifier for Node Classification (Node2Vec + Labels)
+        TrainSVMClassifierTaskFactory trainSVMClassifierTaskFactory = new TrainSVMClassifierTaskFactory(applicationManager);
+        Properties trainSVMProps = new Properties();
+        trainSVMProps.setProperty("preferredMenu", "Apps.MyApp");
+        trainSVMProps.setProperty("title", "Train SVM Classifier (Node2Vec + Labels)");
+        registerService(context, trainSVMClassifierTaskFactory, org.cytoscape.work.TaskFactory.class, trainSVMProps);
+        // Note: Trains SVM on Node2Vec embeddings using disease labels from node table
+
         // --- Đăng ký TaskFactory để hiển thị Panel ---
         ShowPanelTaskFactory showPanelFactory = new ShowPanelTaskFactory(
             context, 
@@ -141,6 +149,7 @@ public class CyActivator extends AbstractCyActivator {
             cyNetworkManager,
             clusterNodesTaskFactory,
             predictAllLinksTaskFactory,
+            trainSVMClassifierTaskFactory,
             applicationManager,
             networkViewManager,
             eventHelper

@@ -34,6 +34,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
     private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
+    private final TrainSVMClassifierTaskFactory trainSVMClassifierTaskFactory; // SVM Classifier
     
     // Need ApplicationManager to get and set current network
     private org.cytoscape.application.CyApplicationManager applicationManager;
@@ -78,6 +79,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
                                CyNetworkManager cyNetworkManager,
                                ClusterNodesTaskFactory clusterNodesTaskFactory,
                                PredictAllLinksTaskFactory predictAllLinksTaskFactory,
+                               TrainSVMClassifierTaskFactory trainSVMClassifierTaskFactory,
                                org.cytoscape.application.CyApplicationManager applicationManager,
                                org.cytoscape.view.model.CyNetworkViewManager networkViewManager) {
         this.taskManager = taskManager;
@@ -92,6 +94,7 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
         this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
+        this.trainSVMClassifierTaskFactory = trainSVMClassifierTaskFactory;
         this.applicationManager = applicationManager;
         this.networkViewManager = networkViewManager;
         initComponents();
@@ -222,6 +225,23 @@ public class NodeEmbeddingsPanel extends JPanel implements CytoPanelComponent, N
                     taskIterator = predictLinksTaskFactory.createTaskIterator();
                 } else if ("Predict All Links (Top 10)".equals(selectedTask)) {
                     taskIterator = predictAllLinksTaskFactory.createTaskIterator();
+                } else if ("Node Classification".equals(selectedTask)) {
+                    // Check if Node2Vec model is selected
+                    String selectedModel = (String) modelComboBox.getSelectedItem();
+                    if ("Node2Vec".equals(selectedModel)) {
+                        taskIterator = trainSVMClassifierTaskFactory.createTaskIterator();
+                    } else {
+                        JOptionPane.showMessageDialog(null, 
+                            "Node Classification currently only supports Node2Vec embeddings.\n\n" +
+                            "Please:\n" +
+                            "1. Select Model: Node2Vec\n" +
+                            "2. Train the model first\n" +
+                            "3. Then run Node Classification task",
+                            "Model Not Supported", 
+                            JOptionPane.WARNING_MESSAGE);
+                        System.out.println("[Node Classification] Only Node2Vec is supported. Current model: " + selectedModel);
+                        return; // Don't execute task
+                    }
                 } else {
                     JOptionPane.showMessageDialog(null, selectedTask + " is not implemented yet.");
                     System.out.println(selectedTask + " is not implemented yet.");

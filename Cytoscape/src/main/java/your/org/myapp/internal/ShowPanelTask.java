@@ -33,6 +33,7 @@ public class ShowPanelTask extends AbstractTask {
     private final CyNetworkManager cyNetworkManager;
     private final ClusterNodesTaskFactory clusterNodesTaskFactory;
     private final PredictAllLinksTaskFactory predictAllLinksTaskFactory;
+    private final TrainSVMClassifierTaskFactory trainSVMClassifierTaskFactory;
     private final org.cytoscape.application.CyApplicationManager applicationManager;
     private final org.cytoscape.view.model.CyNetworkViewManager networkViewManager;
     private final CyEventHelper eventHelper;
@@ -53,6 +54,7 @@ public class ShowPanelTask extends AbstractTask {
                          CyNetworkManager cyNetworkManager,
                          ClusterNodesTaskFactory clusterNodesTaskFactory,
                          PredictAllLinksTaskFactory predictAllLinksTaskFactory,
+                         TrainSVMClassifierTaskFactory trainSVMClassifierTaskFactory,
                          org.cytoscape.application.CyApplicationManager applicationManager,
                          org.cytoscape.view.model.CyNetworkViewManager networkViewManager,
                          CyEventHelper eventHelper) {
@@ -70,6 +72,7 @@ public class ShowPanelTask extends AbstractTask {
         this.cyNetworkManager = cyNetworkManager;
         this.clusterNodesTaskFactory = clusterNodesTaskFactory;
         this.predictAllLinksTaskFactory = predictAllLinksTaskFactory;
+        this.trainSVMClassifierTaskFactory = trainSVMClassifierTaskFactory;
         this.applicationManager = applicationManager;
         this.networkViewManager = networkViewManager;
         this.eventHelper = eventHelper;
@@ -99,6 +102,7 @@ public class ShowPanelTask extends AbstractTask {
             cyNetworkManager,
             clusterNodesTaskFactory,
             predictAllLinksTaskFactory,
+            trainSVMClassifierTaskFactory,
             applicationManager,
             networkViewManager
         );
